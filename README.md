@@ -88,11 +88,9 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 ## ✨ What it does
 
 - 🔍 **Adaptive analysis** — detects noise, grain, complexity, edge density to tune x265
-- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted, preserved, reinjected via post-processing (works regardless of ffmpeg build)
+- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted, preserved, reinjected
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
 - 🎞️ **Grain preservation** — 35mm film, horror movies, grainy sources handled automatically
-- 🎛️ **Adaptive tune detection** — auto-selects `tune=grain` for film sources and `tune=animation` for animated content based on frame analysis (grain level, edge density, texture)
-- 🔇 **Adaptive noise reduction** — auto-detects grain and digital noise, picks the best engine (bm3d / hybrid / nlmeans) and strength per source. Only activates when the source actually needs it
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -126,7 +124,6 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 ### 🐧 Linux
 
 ```bash
-sudo apt install mkvtoolnix
 chmod +x adaptive-encoder
 ./adaptive-encoder "my_movie.mkv"
 ```
@@ -141,7 +138,12 @@ Open **PowerShell** or **CMD** in the folder where `adaptive-encoder.exe` is loc
 
 > 💡 **Tip:** Shift + right-click in the folder → "Open PowerShell window here"
 
-> ⚠️ **Dolby Vision on Windows:** if your output is HDR10 instead of Dolby Vision, the bundled `dovi_tool.exe` may have been blocked by Windows Defender during extraction (a known Nuitka onefile + Windows AV interaction). Workaround: download `dovi_tool.exe` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) (look for `x86_64-pc-windows-msvc.zip`), unzip, and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe`. The encoder will pick it up automatically on the next run.
+> ⚠️ **Windows requires two additional tools in the same folder as `adaptive-encoder.exe`:**
+>
+> **1. `mkvmerge.exe`** — required for MKV output muxing.
+> Download **MKVToolNix** from [mkvtoolnix.download](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` from the install folder (usually `C:\Program Files\MKVToolNix\`) into the same folder as `adaptive-encoder.exe`.
+>
+> **2. `dovi_tool.exe`** — required for Dolby Vision. If your output is HDR10 instead of Dolby Vision, download `dovi_tool.exe` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) (look for `x86_64-pc-windows-msvc.zip`), unzip, and place it in the **same folder** as `adaptive-encoder.exe`.
 
 ### 🍎 macOS (Apple Silicon)
 
@@ -149,8 +151,6 @@ Open **PowerShell** or **CMD** in the folder where `adaptive-encoder.exe` is loc
 # Run ONCE after downloading:
 xattr -d com.apple.quarantine ./adaptive-encoder
 chmod +x ./adaptive-encoder
-brew install dovi_tool
-brew install mkvtoolnix
 
 # Then every time:
 ./adaptive-encoder "my_movie.mkv"
@@ -160,6 +160,29 @@ brew install mkvtoolnix
 ```bash
 ./adaptive-encoder my_movie.mkv --dry-run
 ```
+
+---
+
+## ⚙️ Requirements
+
+**ffmpeg and ffprobe are bundled** — no need to install them separately.
+
+> ⚠️ **Dolby Vision requires `dovi_tool` — install it separately:**
+>
+> **🐧 Linux:**
+> ```bash
+> wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz
+> tar -xzf dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz
+> chmod +x dovi_tool
+> sudo mv dovi_tool /usr/local/bin/
+> ```
+>
+> **🍎 macOS:** Download from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), then:
+> ```bash
+> chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/
+> ```
+>
+> **🪟 Windows:** Download `dovi_tool-x86_64-pc-windows-msvc.zip`, extract and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe`.
 
 ---
 
@@ -190,35 +213,23 @@ Get-ChildItem *.mkv | ForEach-Object {
 ---
 
 ## 📖 All options
+
 ```
--h, --help                            Display this help message and exit
--o, --output OUTPUT                   Output video file (default: <input>_adaptive.mkv)
---max-samples MAX_SAMPLES             Max number of frames to sample for analysis
---target-hours TARGET_HOURS           Fallback duration (h) if ffprobe cannot determine it
---max-bitrate MAX_BITRATE             Force VBV max bitrate (kbps)
---vbv-bufsize VBV_BUFSIZE             Optional VBV buffer size (kbits)
---no-vbv                              Disable automatic VBV bitrate capping
---no-veryslow                         Limit presets to 'slower' instead of 'veryslow'
---no-audio                            Remove audio tracks (copied by default)
---no-subs                             Remove subtitle tracks (copied by default)
---no-crop-detect                      Disable automatic black bar detection
---no-dolby-vision                     Ignore Dolby Vision metadata, encode as HDR10 only
---preserve-dv-profile                 Skip Dolby Vision if the source profile cannot be
-                                      reproduced by x265 (e.g. profile 7.x), instead of
-                                      silently downgrading to 8.1. Outputs HDR10 in that case
---force-tune {grain,animation}        Force x265 tune preset. 'grain' preserves film grain
-                                      structure (higher psy-rd). 'animation' optimizes for
-                                      flat areas and sharp edges. Default: auto-adaptive
---crop-samples CROP_SAMPLES           Number of time points for crop detection
---no-denoise                          Disable adaptive noise reduction (auto-enabled for noisy sources)
---denoise-strength DENOISE_STRENGTH   Override denoise strength (0.0=off, 1.0=max). Default: auto
---denoise-preserve-grain              Gentler denoise that preserves some film grain texture
---denoise-engine {nlmeans,bm3d,hybrid}
-                                      Force a specific denoise engine instead of automatic
-                                      selection. bm3d for maximum quality (3-5x slower),
-                                      nlmeans for speed, hybrid for film grain
---verbose                             Display technical details of adaptive analysis
---dry-run                             Display analysis and command without encoding
+-h, --help                   Display this help message and exit
+-o, --output OUTPUT          Output video file (default: <input>_adaptive.mkv)
+--max-samples MAX_SAMPLES    Max number of frames to sample for analysis
+--target-hours TARGET_HOURS  Fallback duration (h) if ffprobe cannot determine it
+--max-bitrate MAX_BITRATE    Force VBV max bitrate (kbps)
+--vbv-bufsize VBV_BUFSIZE    Optional VBV buffer size (kbits)
+--no-vbv                     Disable automatic VBV bitrate capping
+--no-veryslow                Limit presets to 'slower' instead of 'veryslow'
+--no-audio                   Remove audio tracks (copied by default)
+--no-subs                    Remove subtitle tracks (copied by default)
+--no-crop-detect             Disable automatic black bar detection
+--no-dolby-vision            Do not preserve Dolby Vision metadata
+--crop-samples CROP_SAMPLES  Number of time points for crop detection
+--verbose                    Display technical details of adaptive analysis
+--dry-run                    Display analysis and command without encoding
 ```
 
 ---
@@ -226,35 +237,28 @@ Get-ChildItem *.mkv | ForEach-Object {
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg, ffprobe and dovi_tool are bundled — no dependencies to install.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled — no dependencies to install.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. Particularly on Blu-ray remuxes with film grain (classics, horror, 35mm auteur films) or complex scenes (action, sci-fi).
 
-**Do I need to install ffmpeg or dovi_tool separately?**
-No. ffmpeg, ffprobe and dovi_tool are all bundled inside the binary. Download, run, done.
-The only exception is Windows, where Windows Defender occasionally blocks the bundled `dovi_tool.exe` from being extracted at runtime. If this happens, just place `dovi_tool.exe` in the same folder as `adaptive-encoder.exe` (see Windows Quick Start above).
+**Do I need to install ffmpeg separately?**
+No. ffmpeg and ffprobe are bundled inside the binary. Download, run, done.
 
-**Dolby Vision doesn't appear in the output — why?**
-Use `--dry-run --verbose` to check what profile is detected at the source. Make sure the source file actually contains Dolby Vision metadata (check with MediaInfo). If the source is Profile 7.x and you're using `--preserve-dv-profile`, the encoder intentionally skips DV to avoid a silent downgrade to 8.1 — it outputs HDR10 instead. On Windows, also check that `dovi_tool.exe` is accessible (see the note in Quick Start).
+**Dolby Vision doesn't work — why?**
+`dovi_tool` must be installed separately. On Windows, place `dovi_tool.exe` in the same folder as `adaptive-encoder.exe`. On Linux/macOS, install it to `/usr/local/bin/`. Without it, the encoder falls back to HDR10 only.
+
+**How do I use it on macOS?**
+Run `xattr -d com.apple.quarantine ./adaptive-encoder && chmod +x ./adaptive-encoder` once after downloading. After that, just run `./adaptive-encoder your_movie.mkv`.
 
 **Does Profile 7 → 8.1 conversion work?**
-Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1 via a post-encoding step using dovi_tool, compatible with most modern Dolby Vision players.
-
-**What is --preserve-dv-profile for?**
-Profile 7.x cannot be reproduced identically by x265 (which only supports profiles 5 and 8). By default the encoder converts to 8.1. With `--preserve-dv-profile`, it skips DV entirely and outputs clean HDR10 instead of silently downgrading the profile.
+Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players.
 
 **Why are my files larger than with other encoders?**
 Intentional design choice — maximum detail and HDR metadata preservation. To cap file size, use `--max-bitrate`.
 
-**How does the adaptive noise reduction work?**
-The encoder samples frames before encoding, measures noise and grain levels, then automatically picks the best denoising engine and strength. bm3d is selected for digital sensor noise, hybrid (hqdn3d + nlmeans) for film grain, nlmeans for balanced sources. If the source is clean, no denoising is applied at all. Use `--no-denoise` to disable it entirely.
-
 **Encoding speed?**
 The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
-
-**How do I use it on macOS?**
-Run `xattr -d com.apple.quarantine ./adaptive-encoder && chmod +x ./adaptive-encoder` once after downloading. After that, just run `./adaptive-encoder your_movie.mkv`.
 
 **What if it doesn't work for my files?**
 Open an issue on GitHub or ask on Discord — happy to help.
