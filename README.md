@@ -95,7 +95,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K (excellent for 1080p AND 4K)
-- 📦 **Single binary** — ffmpeg, ffprobe and dovi_tool bundled. No dependencies to install.
+- 📦 **Single binary** — ffmpeg and ffprobe bundled. No dependencies to install.
 
 ---
 
@@ -119,104 +119,71 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 
 ---
 
-## 🚀 Quick start
+## ⚙️ Installation & requirements
 
-### 🐧 Linux
+ffmpeg and ffprobe are bundled — no need to install them separately. However, **two tools must be installed** before using the encoder:
 
-```bash
-chmod +x adaptive-encoder
-./adaptive-encoder "my_movie.mkv"
-```
+### 1. mkvmerge — required for MKV output
 
-### 🪟 Windows
+| Platform | Install |
+|---|---|
+| 🐧 Linux | `sudo apt-get install mkvtoolnix` |
+| 🍎 macOS | `brew install mkvtoolnix` |
+| 🪟 Windows | Download [MKVToolNix](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` from `C:\Program Files\MKVToolNix\` into the **same folder** as `adaptive-encoder.exe` |
 
-Open **PowerShell** or **CMD** in the folder where `adaptive-encoder.exe` is located:
+### 2. dovi_tool — required for Dolby Vision
 
-```powershell
-.\adaptive-encoder.exe "my_movie.mkv"
-```
+| Platform | Install |
+|---|---|
+| 🐧 Linux | `wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz && tar -xzf dovi_tool-*.tar.gz && chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🍎 macOS | Download from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), then `chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🪟 Windows | Download `dovi_tool-x86_64-pc-windows-msvc.zip` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), extract and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe` |
 
-> 💡 **Tip:** Shift + right-click in the folder → "Open PowerShell window here"
+Without `dovi_tool`, the encoder falls back to HDR10 only.
 
-> ⚠️ **Windows requires two additional tools in the same folder as `adaptive-encoder.exe`:**
->
-> **1. `mkvmerge.exe`** — required for MKV output muxing.
-> Download **MKVToolNix** from [mkvtoolnix.download](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` from the install folder (usually `C:\Program Files\MKVToolNix\`) into the same folder as `adaptive-encoder.exe`.
->
-> **2. `dovi_tool.exe`** — required for Dolby Vision. If your output is HDR10 instead of Dolby Vision, download `dovi_tool.exe` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) (look for `x86_64-pc-windows-msvc.zip`), unzip, and place it in the **same folder** as `adaptive-encoder.exe`.
+### 3. First launch — macOS only
 
-### 🍎 macOS (Apple Silicon)
+macOS blocks unsigned binaries. Run this **once** after downloading:
 
 ```bash
-# Run ONCE after downloading:
 xattr -d com.apple.quarantine ./adaptive-encoder
 chmod +x ./adaptive-encoder
-
-# Then every time:
-./adaptive-encoder "my_movie.mkv"
 ```
 
-**Test mode (analyze without encoding):**
-```bash
-./adaptive-encoder my_movie.mkv --dry-run
-```
+After that, macOS will never warn about this file again.
 
 ---
 
-## ⚙️ Requirements
+## 🚀 Quick start
 
-**ffmpeg and ffprobe are bundled** — no need to install them separately.
+```bash
+# 🐧 Linux / 🍎 macOS
+./adaptive-encoder "my_movie.mkv"
 
-> ⚠️ **`mkvmerge` is required for MKV output — install it separately:**
->
-> **🐧 Linux:**
-> ```bash
-> sudo apt-get install mkvtoolnix
-> ```
->
-> **🍎 macOS:**
-> ```bash
-> brew install mkvtoolnix
-> ```
->
-> **🪟 Windows:** Download MKVToolNix from [mkvtoolnix.download](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` into the same folder as `adaptive-encoder.exe`.
+# 🪟 Windows (PowerShell or CMD)
+.\adaptive-encoder.exe "my_movie.mkv"
+```
 
-> ⚠️ **Dolby Vision requires `dovi_tool` — install it separately:**
->
-> **🐧 Linux:**
-> ```bash
-> wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz
-> tar -xzf dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz
-> chmod +x dovi_tool
-> sudo mv dovi_tool /usr/local/bin/
-> ```
->
-> **🍎 macOS:** Download from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), then:
-> ```bash
-> chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/
-> ```
->
-> **🪟 Windows:** Download `dovi_tool-x86_64-pc-windows-msvc.zip`, extract and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe`.
+> 💡 **Windows tip:** Shift + right-click in the folder → "Open PowerShell window here"
+
+**Test mode — analyze without encoding:**
+```bash
+./adaptive-encoder "my_movie.mkv" --dry-run
+```
 
 ---
 
 ## 🗂️ Batch encode an entire library
 
-### 🐧 Linux / 🍎 macOS
-
 ```bash
-chmod +x adaptive-encoder
-mv adaptive-encoder ~/
-cd ~/Movies
-for file in *.mkv
-do
-    ~/adaptive-encoder "$file"
+# 🐧 Linux / 🍎 macOS
+for file in *.mkv; do
+    ./adaptive-encoder "$file"
 done
 ```
 
-### 🪟 Windows
-
 ```powershell
+# 🪟 Windows
 Get-ChildItem *.mkv | ForEach-Object {
     .\adaptive-encoder.exe $_.FullName
 }
@@ -264,7 +231,7 @@ Get-ChildItem *.mkv | ForEach-Object {
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled — no dependencies to install.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled — only mkvmerge and dovi_tool need to be installed separately.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. Particularly on Blu-ray remuxes with film grain (classics, horror, 35mm auteur films) or complex scenes (action, sci-fi).
@@ -273,10 +240,7 @@ No, the tool is excellent for 1080p too. Particularly on Blu-ray remuxes with fi
 No. ffmpeg and ffprobe are bundled inside the binary. Download, run, done.
 
 **Dolby Vision doesn't work — why?**
-`dovi_tool` must be installed separately. On Windows, place `dovi_tool.exe` in the same folder as `adaptive-encoder.exe`. On Linux/macOS, install it to `/usr/local/bin/`. Without it, the encoder falls back to HDR10 only.
-
-**How do I use it on macOS?**
-Run `xattr -d com.apple.quarantine ./adaptive-encoder && chmod +x ./adaptive-encoder` once after downloading. After that, just run `./adaptive-encoder your_movie.mkv`.
+`dovi_tool` must be installed separately (see Installation above). Without it, the encoder falls back to HDR10 only.
 
 **Does Profile 7 → 8.1 conversion work?**
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players.
