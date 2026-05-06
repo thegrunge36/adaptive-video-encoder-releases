@@ -167,6 +167,20 @@ chmod +x ./adaptive-encoder
 
 **ffmpeg and ffprobe are bundled** — no need to install them separately.
 
+> ⚠️ **`mkvmerge` is required for MKV output — install it separately:**
+>
+> **🐧 Linux:**
+> ```bash
+> sudo apt-get install mkvtoolnix
+> ```
+>
+> **🍎 macOS:**
+> ```bash
+> brew install mkvtoolnix
+> ```
+>
+> **🪟 Windows:** Download MKVToolNix from [mkvtoolnix.download](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` into the same folder as `adaptive-encoder.exe`.
+
 > ⚠️ **Dolby Vision requires `dovi_tool` — install it separately:**
 >
 > **🐧 Linux:**
@@ -215,21 +229,34 @@ Get-ChildItem *.mkv | ForEach-Object {
 ## 📖 All options
 
 ```
--h, --help                   Display this help message and exit
--o, --output OUTPUT          Output video file (default: <input>_adaptive.mkv)
---max-samples MAX_SAMPLES    Max number of frames to sample for analysis
---target-hours TARGET_HOURS  Fallback duration (h) if ffprobe cannot determine it
---max-bitrate MAX_BITRATE    Force VBV max bitrate (kbps)
---vbv-bufsize VBV_BUFSIZE    Optional VBV buffer size (kbits)
---no-vbv                     Disable automatic VBV bitrate capping
---no-veryslow                Limit presets to 'slower' instead of 'veryslow'
---no-audio                   Remove audio tracks (copied by default)
---no-subs                    Remove subtitle tracks (copied by default)
---no-crop-detect             Disable automatic black bar detection
---no-dolby-vision            Do not preserve Dolby Vision metadata
---crop-samples CROP_SAMPLES  Number of time points for crop detection
---verbose                    Display technical details of adaptive analysis
---dry-run                    Display analysis and command without encoding
+-h, --help                            Display this help message and exit
+-o, --output OUTPUT                   Output video file (default: <input>_adaptive.mkv)
+--max-samples MAX_SAMPLES             Max number of frames to sample for analysis
+--target-hours TARGET_HOURS           Fallback duration (h) if ffprobe cannot determine it
+--max-bitrate MAX_BITRATE             Force VBV max bitrate (kbps)
+--vbv-bufsize VBV_BUFSIZE             Optional VBV buffer size (kbits)
+--no-vbv                              Disable automatic VBV bitrate capping
+--no-veryslow                         Limit presets to 'slower' instead of 'veryslow'
+--no-audio                            Remove audio tracks (copied by default)
+--no-subs                             Remove subtitle tracks (copied by default)
+--no-crop-detect                      Disable automatic black bar detection
+--no-dolby-vision                     Ignore Dolby Vision metadata, encode as HDR10 only
+--preserve-dv-profile                 Skip Dolby Vision if the source profile cannot be
+                                      reproduced by x265 (e.g. profile 7.x), instead of
+                                      silently downgrading to 8.1. Outputs HDR10 in that case
+--force-tune {grain,animation}        Force x265 tune preset. 'grain' preserves film grain
+                                      structure (higher psy-rd). 'animation' optimizes for
+                                      flat areas and sharp edges. Default: auto-adaptive
+--crop-samples CROP_SAMPLES           Number of time points for crop detection
+--no-denoise                          Disable adaptive noise reduction (auto-enabled for noisy sources)
+--denoise-strength DENOISE_STRENGTH   Override denoise strength (0.0=off, 1.0=max). Default: auto
+--denoise-preserve-grain              Gentler denoise that preserves some film grain texture
+--denoise-engine {nlmeans,bm3d,hybrid}
+                                      Force a specific denoise engine instead of automatic
+                                      selection. bm3d for maximum quality (3-5x slower),
+                                      nlmeans for speed, hybrid for film grain
+--verbose                             Display technical details of adaptive analysis
+--dry-run                             Display analysis and command without encoding
 ```
 
 ---
