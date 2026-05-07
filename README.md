@@ -217,7 +217,7 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-veryslow                         Limit presets to 'slower' instead of 'veryslow'
 --force-tune {grain,animation}        Force x265 tune preset. 'grain' preserves film grain 
                                       structure (higher psy-rd). 'animation' optimizes for 
-                                      flat areas and sharp edges. Default: auto-adaptive
+                                      flat areas and sharp edges.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                     Ignore Dolby Vision metadata, encode as HDR10 only
