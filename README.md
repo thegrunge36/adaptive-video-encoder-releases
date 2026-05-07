@@ -261,3 +261,4 @@ Open an issue on GitHub or ask on Discord — happy to help.
 - 💬 **Discord** (fast replies): [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
 - 📧 **Email**: [osx300@gmail.com](mailto:osx300@gmail.com)
 - ☕ **Buy me a coffee** (optional): [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
+
