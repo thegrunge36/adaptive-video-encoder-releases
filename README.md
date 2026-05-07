@@ -158,6 +158,7 @@ After that, macOS will never warn about this file again.
 
 ```bash
 # 🐧 Linux / 🍎 macOS
+chmod +x ./adaptive-encoder
 ./adaptive-encoder "my_movie.mkv"
 
 # 🪟 Windows (PowerShell or CMD)
