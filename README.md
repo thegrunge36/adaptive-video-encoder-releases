@@ -199,30 +199,51 @@ Get-ChildItem *.mkv | ForEach-Object {
 ```
 -h, --help                            Display this help message and exit
 -o, --output OUTPUT                   Output video file (default: <input>_adaptive.mkv)
+
+[ Video Settings ]
+--force-fps FORCE_FPS                 Force video frame rate conversion (e.g., 23.976). 
+                                      Ensures perfect A/V sync during Dolby Vision remux.
 --max-samples MAX_SAMPLES             Max number of frames to sample for analysis
 --target-hours TARGET_HOURS           Fallback duration (h) if ffprobe cannot determine it
+--crop-samples CROP_SAMPLES           Number of time points for crop detection
+--no-crop-detect                      Disable automatic black bar detection
+--base-crf BASE_CRF                Shift the adaptive CRF baseline (default: 22.0). 
+                                      Lower is better quality, higher is smaller file size.
+
+[ Bitrate & Presets ]
 --max-bitrate MAX_BITRATE             Force VBV max bitrate (kbps)
 --vbv-bufsize VBV_BUFSIZE             Optional VBV buffer size (kbits)
 --no-vbv                              Disable automatic VBV bitrate capping
 --no-veryslow                         Limit presets to 'slower' instead of 'veryslow'
---no-audio                            Remove audio tracks (copied by default)
---no-subs                             Remove subtitle tracks (copied by default)
---no-crop-detect                      Disable automatic black bar detection
---no-dolby-vision                     Ignore Dolby Vision metadata, encode as HDR10 only
---preserve-dv-profile                 Skip Dolby Vision if the source profile cannot be
-                                      reproduced by x265 (e.g. profile 7.x), instead of
-                                      silently downgrading to 8.1. Outputs HDR10 in that case
---force-tune {grain,animation}        Force x265 tune preset. 'grain' preserves film grain
-                                      structure (higher psy-rd). 'animation' optimizes for
+--force-tune {grain,animation}        Force x265 tune preset. 'grain' preserves film grain 
+                                      structure (higher psy-rd). 'animation' optimizes for 
                                       flat areas and sharp edges. Default: auto-adaptive
---crop-samples CROP_SAMPLES           Number of time points for crop detection
+
+[ Dolby Vision & HDR ]
+--no-dolby-vision                     Ignore Dolby Vision metadata, encode as HDR10 only
+--preserve-dv-profile                 Skip Dolby Vision if the source profile cannot be 
+                                      reproduced by x265 (e.g. profile 7.x), instead of 
+                                      silently downgrading to 8.1. Outputs HDR10 in that case.
+--temp-dir TEMP_DIR                   Directory for DV temp files to avoid /tmp RAM exhaustion.
+                                      Crucial for Linux systems using tmpfs for /tmp.
+
+[ Noise Reduction ]
 --no-denoise                          Disable adaptive noise reduction (auto-enabled for noisy sources)
 --denoise-strength DENOISE_STRENGTH   Override denoise strength (0.0=off, 1.0=max). Default: auto
 --denoise-preserve-grain              Gentler denoise that preserves some film grain texture
 --denoise-engine {nlmeans,bm3d,hybrid}
-                                      Force a specific denoise engine instead of automatic
-                                      selection. bm3d for maximum quality (3-5x slower),
+                                      Force a specific denoise engine instead of automatic 
+                                      selection. bm3d for maximum quality (3-5x slower), 
                                       nlmeans for speed, hybrid for film grain
+
+[ Audio & Subtitles ]
+--no-audio                            Remove audio tracks (copied by default)
+--no-subs                             Remove subtitle tracks (copied by default)
+--audio-lang AUDIO_LANG            Keep only specific audio languages (e.g., 'fre,eng'). 
+                                      Removes unwanted dubs to save space.
+--downmix-audio                    Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0.
+
+[ System ]
 --verbose                             Display technical details of adaptive analysis
 --dry-run                             Display analysis and command without encoding
 ```
