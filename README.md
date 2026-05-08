@@ -215,6 +215,9 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Désactive la détection automatique des bandes noires
 --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
                                   Applique un tone mapping pour les écrans non-HDR.
+--base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0, minimum : 19).
+                                  Une valeur plus basse offre une meilleure qualité, une valeur plus élevée réduit la taille du fichier.
+                                  
 
 [ Débit & Préréglages ]
 --max-bitrate MAX_BITRATE         Force le débit max VBV (kbps)
@@ -504,8 +507,9 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Disable automatic black bar detection
 --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR. 
                                   Applies tone mapping for non-HDR display compatibility.
---base-crf BASE_CRF               Shift the adaptive CRF baseline (default: 22.0). 
-                                  Lower is better quality, higher is smaller file size.
+--base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0, minimum: 19).
+                                  Lower values provide better quality, higher values reduce file size.
+                                  
 
 [ Bitrate & Presets ]
 --max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps)
