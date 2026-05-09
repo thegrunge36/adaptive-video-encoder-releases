@@ -101,7 +101,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🔊 **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Résolutions** — 480p à 8K (excellent pour 1080p ET 4K)
-- 📦 **Binaire unique** — ffmpeg et ffprobe intégrés. Aucune dépendance à installer.
+- 📦 **Binaire unique** — ffmpeg et ffprobe intégrés. Sur Windows, placez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` à côté du binaire.
 
 ---
 
@@ -127,9 +127,9 @@ Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du tem
 
 ## ⚙️ Installation et prérequis
 
-ffmpeg et ffprobe sont intégrés — inutile de les installer séparément. Cependant, **deux outils doivent être installés** avant d'utiliser l'encodeur :
+ffmpeg et ffprobe sont intégrés au binaire — inutile de les installer séparément. Sur **Windows**, trois outils supplémentaires doivent être placés dans le **même dossier** que `adaptive-encoder.exe` :
 
-### 1. mkvmerge — requis pour la sortie MKV
+### 1. mkvmerge — requis pour le remux Dolby Vision
 
 | Plateforme | Installation |
 |---|---|
@@ -137,17 +137,23 @@ ffmpeg et ffprobe sont intégrés — inutile de les installer séparément. Cep
 | 🍎 macOS | `brew install mkvtoolnix` |
 | 🪟 Windows | Téléchargez [MKVToolNix](https://mkvtoolnix.download/downloads.html), installez-le, puis copiez `mkvmerge.exe` depuis `C:\Program Files\MKVToolNix\` dans le **même dossier** que `adaptive-encoder.exe` |
 
-### 2. dovi_tool — requis pour le Dolby Vision
+### 2. dovi_tool — requis pour le Dolby Vision (Windows uniquement)
 
-| Plateforme | Installation |
-|---|---|
-| 🐧 Linux | `wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz && tar -xzf dovi_tool-*.tar.gz && chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
-| 🍎 macOS | Téléchargez depuis [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), puis `chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
-| 🪟 Windows | Téléchargez `dovi_tool-x86_64-pc-windows-msvc.zip` depuis [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), extrayez et placez `dovi_tool.exe` dans le **même dossier** que `adaptive-encoder.exe` |
+Sur Linux et macOS, `dovi_tool` est intégré au binaire. Sur Windows, placez `dovi_tool.exe` dans le même dossier que `adaptive-encoder.exe`.
+
+Téléchargez `dovi_tool-x86_64-pc-windows-msvc.zip` depuis [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) et extrayez `dovi_tool.exe`.
 
 Sans `dovi_tool`, l'encodeur bascule sur HDR10 uniquement.
 
-### 3. Premier lancement — macOS uniquement
+### 3. hdr10plus_tool — requis pour le HDR10+ (Windows uniquement)
+
+Sur Linux et macOS, `hdr10plus_tool` est intégré au binaire. Sur Windows, placez `hdr10plus_tool.exe` dans le même dossier que `adaptive-encoder.exe`.
+
+Téléchargez `hdr10plus_tool-x86_64-pc-windows-msvc.zip` depuis [github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases) et extrayez `hdr10plus_tool.exe`.
+
+Sans `hdr10plus_tool`, les sources HDR10+ sont encodées en HDR10 statique (métadonnées dynamiques perdues).
+
+### 4. Premier lancement — macOS uniquement
 
 macOS bloque les binaires non signés. Exécutez ceci **une seule fois** après le téléchargement :
 
@@ -215,9 +221,9 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Désactive la détection automatique des bandes noires
 --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
                                   Applique un tone mapping pour les écrans non-HDR.
---base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0, minimum : 19).
-                                  Une valeur plus basse offre une meilleure qualité, une valeur plus élevée réduit la taille du fichier.
-                                  
+--base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0, minimum : 18).
+                                  Une valeur plus basse offre une meilleure qualité, une valeur
+                                  plus élevée réduit la taille du fichier.
 
 [ Débit & Préréglages ]
 --max-bitrate MAX_BITRATE         Force le débit max VBV (kbps)
@@ -227,6 +233,15 @@ Get-ChildItem *.mkv | ForEach-Object {
 --force-tune {grain,animation}    Force le preset tune x265. 'grain' préserve la structure
                                   du grain (psy-rd plus élevé). 'animation' optimise pour
                                   les zones plates et les bords nets.
+--per-scene-crf                   Détecte les coupures de scène et applique un offset CRF par
+                                  scène selon la luminance et la complexité. Les scènes
+                                  sombres/statiques reçoivent +1.0 à +1.5 CRF (équivalent
+                                  visuel, fichiers plus compacts) ; les scènes riches en
+                                  détails reçoivent -0.5 CRF. Ajoute environ 1 minute de
+                                  pré-analyse sur un film de 2h.
+                                  Désactivé automatiquement sur les sources Dolby Vision
+                                  (incompatible avec l'injection RPU post-encodage) et avec
+                                  --parallel-chunks.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                 Ignore les métadonnées Dolby Vision, encode en HDR10 seul
@@ -235,22 +250,77 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   silencieusement en 8.1. Sort en HDR10 dans ce cas.
 --temp-dir TEMP_DIR               Dossier pour les fichiers temporaires DV pour éviter la
                                   saturation RAM de /tmp. Crucial sur Linux avec tmpfs.
+--no-hdr10plus                    Ignore les métadonnées dynamiques HDR10+ même si présentes
+                                  dans la source (encodé en HDR10 seul). HDR10+ est détecté
+                                  et embarqué automatiquement quand hdr10plus_tool est
+                                  disponible.
+
+[ Validation qualité ]
+--vmaf                            Mesure VMAF/SSIM/PSNR sur un échantillon de 60s du fichier
+                                  encodé après l'encodage. Les résultats sont ajoutés au
+                                  sidecar JSON.
+--vmaf-full                       Mesure VMAF sur l'intégralité du fichier au lieu d'un
+                                  échantillon. Significativement plus lent mais exhaustif.
+--vmaf-sample-seconds SECONDS     Longueur de l'échantillon central utilisé par --vmaf
+                                  (défaut : 60s). Ignoré avec --vmaf-full.
+--vmaf-target SCORE               Calibre le CRF avant l'encodage pour atteindre un score
+                                  VMAF cible (ex. 95). Encode un échantillon de 60s à trois
+                                  CRFs, mesure VMAF, puis interpole linéairement. Ajoute
+                                  environ 3-5 minutes sur un encodage 4K mais garantit une
+                                  qualité prévisible. Incompatible avec Dolby Vision.
+
+[ Sécurité ]
+--skip-disk-check                 Désactive la vérification d'espace disque pré-encodage.
+                                  Risqué sur les longs encodages — un échec en fin de course
+                                  coûte des heures de CPU.
+--no-integrity-check              Désactive la vérification d'intégrité post-encodage
+                                  (décodage complet de la sortie). Économise quelques
+                                  minutes mais perd la détection de corruption silencieuse.
 
 [ Réduction du bruit ]
 --no-denoise                      Désactive la réduction de bruit adaptative
---denoise-strength DENOISE_STRENGTH  Force la force du débruitage (0.0=off, 1.0=max). Défaut : auto
---denoise-preserve-grain          Débruitage plus doux qui préserve une partie de la texture du grain
+--denoise-strength DENOISE_STRENGTH
+                                  Force la force du débruitage (0.0=off, 1.0=max). Défaut : auto
+--denoise-preserve-grain          Débruitage plus doux qui préserve une partie de la texture
+                                  du grain
 --denoise-engine {nlmeans,bm3d,hybrid}
-                                  Force un moteur de débruitage spécifique. bm3d pour la qualité
-                                  maximale (3-5x plus lent), nlmeans pour la vitesse, hybrid pour
-                                  le grain cinématique.
+                                  Force un moteur de débruitage spécifique. bm3d pour la
+                                  qualité maximale (3-5x plus lent), nlmeans pour la vitesse,
+                                  hybrid pour le grain cinématique.
 
 [ Audio & Sous-titres ]
 --no-audio                        Supprime les pistes audio (copiées par défaut)
 --no-subs                         Supprime les sous-titres (copiés par défaut)
 --audio-lang AUDIO_LANG           Garde uniquement certaines langues audio (ex. 'fre,eng').
-                                  Supprime les doublages indésirables pour économiser de l'espace.
+                                  Supprime les doublages indésirables pour économiser de
+                                  l'espace. La première langue listée devient la piste par
+                                  défaut du player.
 --downmix-audio                   Mixe les pistes 7.1/Atmos lourdes en 5.1 ou 2.0 standard.
+--normalize-audio {off,single-pass,two-pass}
+                                  Applique la normalisation de loudness EBU R128 sur les
+                                  pistes audio conservées. 'single-pass' utilise une
+                                  normalisation linéaire dynamique (rapide, moins précise).
+                                  'two-pass' mesure d'abord tout le fichier puis normalise
+                                  (plus lent mais précis — recommandé). Ré-encode l'audio
+                                  en AC3 à 640 kbps pour 5.1 / 192 kbps pour stéréo.
+--normalize-audio-target LUFS     Cible de loudness intégrée en LUFS (défaut : -16.0, adapté
+                                  à la TV/streaming. Utiliser -23.0 pour EBU R128 broadcast).
+
+[ Encodage parallèle par chunks (expérimental) ]
+--parallel-chunks N               Encode N chunks en parallèle (1 = encodage monolithique,
+                                  défaut). Découpe la source aux coupures de scène en chunks
+                                  d'environ 5 min et les encode simultanément. Énorme
+                                  accélération sur les machines multi-cœurs. Incompatible
+                                  avec Dolby Vision, HDR10+, --per-scene-crf, --vmaf-target
+                                  et --normalize-audio two-pass.
+--chunk-seconds CHUNK_SECONDS     Durée cible d'un chunk en secondes pour --parallel-chunks
+                                  (défaut : 300). Plus petit = plus de parallélisme,
+                                  légèrement plus d'overhead conteneur. Plus grand = plus
+                                  proche du monolithique.
+--resume                          Reprend un encodage chunked interrompu via son manifest
+                                  sidecar (<output>.chunks.json). Les chunks déjà terminés
+                                  sont sautés. Implique --parallel-chunks (utiliser la même
+                                  valeur qu'au run d'origine).
 
 [ Système ]
 --verbose                         Affiche les détails techniques de l'analyse adaptative
@@ -262,16 +332,16 @@ Get-ChildItem *.mkv | ForEach-Object {
 ## ❓ FAQ
 
 **Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). ffmpeg et ffprobe sont intégrés — seuls mkvmerge et dovi_tool doivent être installés séparément.
+Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). ffmpeg et ffprobe sont intégrés au binaire. Sur Windows, `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` doivent être placés dans le même dossier que `adaptive-encoder.exe`.
 
 **C'est seulement pour la 4K ?**
 Non, l'outil est excellent en 1080p aussi. Particulièrement sur les remux Blu-ray avec grain cinématique (classiques, horreur, films d'auteur 35mm) ou les scènes complexes (action, sci-fi).
 
 **Dois-je installer ffmpeg séparément ?**
-Non. ffmpeg et ffprobe sont intégrés dans le binaire. Téléchargez, lancez, c'est tout.
+Non. ffmpeg et ffprobe sont intégrés dans le binaire. Sur Windows, placez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` dans le même dossier que l'exécutable (voir Installation).
 
-**Le Dolby Vision ne fonctionne pas — pourquoi ?**
-`dovi_tool` doit être installé séparément (voir Installation ci-dessus). Sans lui, l'encodeur bascule sur HDR10 uniquement.
+**Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
+Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées sans configuration. Si la source contient les deux (rare), Dolby Vision prend la priorité.
 
 **La conversion Profil 7 → 8.1 fonctionne ?**
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes.
@@ -393,7 +463,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K (excellent for 1080p AND 4K)
-- 📦 **Single binary** — ffmpeg and ffprobe bundled. No dependencies to install.
+- 📦 **Single binary** — ffmpeg and ffprobe bundled. On Windows, place `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` next to the binary.
 
 ---
 
@@ -419,9 +489,9 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 
 ## ⚙️ Installation & requirements
 
-ffmpeg and ffprobe are bundled — no need to install them separately. However, **two tools must be installed** before using the encoder:
+ffmpeg and ffprobe are bundled inside the binary — no need to install them separately. On **Windows**, three additional tools must be placed in the **same folder** as `adaptive-encoder.exe`:
 
-### 1. mkvmerge — required for MKV output
+### 1. mkvmerge — required for Dolby Vision remux
 
 | Platform | Install |
 |---|---|
@@ -429,17 +499,23 @@ ffmpeg and ffprobe are bundled — no need to install them separately. However, 
 | 🍎 macOS | `brew install mkvtoolnix` |
 | 🪟 Windows | Download [MKVToolNix](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` from `C:\Program Files\MKVToolNix\` into the **same folder** as `adaptive-encoder.exe` |
 
-### 2. dovi_tool — required for Dolby Vision
+### 2. dovi_tool — required for Dolby Vision (Windows only)
 
-| Platform | Install |
-|---|---|
-| 🐧 Linux | `wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz && tar -xzf dovi_tool-*.tar.gz && chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
-| 🍎 macOS | Download from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), then `chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
-| 🪟 Windows | Download `dovi_tool-x86_64-pc-windows-msvc.zip` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), extract and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe` |
+On Linux and macOS, `dovi_tool` is bundled inside the binary. On Windows, place `dovi_tool.exe` in the same folder as `adaptive-encoder.exe`.
+
+Download `dovi_tool-x86_64-pc-windows-msvc.zip` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) and extract `dovi_tool.exe`.
 
 Without `dovi_tool`, the encoder falls back to HDR10 only.
 
-### 3. First launch — macOS only
+### 3. hdr10plus_tool — required for HDR10+ (Windows only)
+
+On Linux and macOS, `hdr10plus_tool` is bundled inside the binary. On Windows, place `hdr10plus_tool.exe` in the same folder as `adaptive-encoder.exe`.
+
+Download `hdr10plus_tool-x86_64-pc-windows-msvc.zip` from [github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases) and extract `hdr10plus_tool.exe`.
+
+Without `hdr10plus_tool`, HDR10+ sources are encoded as static HDR10 (dynamic metadata lost).
+
+### 4. First launch — macOS only
 
 macOS blocks unsigned binaries. Run this **once** after downloading:
 
@@ -499,50 +575,107 @@ Get-ChildItem *.mkv | ForEach-Object {
 -o, --output OUTPUT               Output video file (default: <input>_adaptive.mkv)
 
 [ Video Settings ]
---force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976). 
+--force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976).
                                   Ensures perfect A/V sync during Dolby Vision remux.
 --max-samples MAX_SAMPLES         Max number of frames to sample for analysis
 --target-hours TARGET_HOURS       Fallback duration (h) if ffprobe cannot determine it
 --crop-samples CROP_SAMPLES       Number of time points for crop detection
 --no-crop-detect                  Disable automatic black bar detection
---downscale-1080p-sdr             Downscale source to 1080p and convert to SDR. 
+--downscale-1080p-sdr             Downscale source to 1080p and convert to SDR.
                                   Applies tone mapping for non-HDR display compatibility.
---base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0, minimum: 19).
-                                  Lower values provide better quality, higher values reduce file size.
-                                  
+--base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0, minimum: 18).
+                                  Lower values provide better quality, higher values reduce
+                                  file size.
 
 [ Bitrate & Presets ]
 --max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps)
 --vbv-bufsize VBV_BUFSIZE         Optional VBV buffer size (kbits)
 --no-vbv                          Disable automatic VBV bitrate capping
 --no-veryslow                     Limit presets to 'slower' instead of 'veryslow'
---force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain 
-                                  structure (higher psy-rd). 'animation' optimizes for 
+--force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain
+                                  structure (higher psy-rd). 'animation' optimizes for
                                   flat areas and sharp edges.
+--per-scene-crf                   Detect scene cuts and apply a per-scene CRF offset based
+                                  on luminance and complexity. Dark/static scenes get +1.0
+                                  to +1.5 CRF (visually equivalent, smaller files);
+                                  detail-rich scenes get -0.5 CRF. Adds about 1 minute of
+                                  pre-analysis on a 2h film.
+                                  Automatically disabled on Dolby Vision sources
+                                  (incompatible with post-encode RPU injection) and with
+                                  --parallel-chunks.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                 Ignore Dolby Vision metadata, encode as HDR10 only
---preserve-dv-profile             Skip Dolby Vision if the source profile cannot be 
-                                  reproduced by x265 (e.g. profile 7.x), instead of 
+--preserve-dv-profile             Skip Dolby Vision if the source profile cannot be
+                                  reproduced by x265 (e.g. profile 7.x), instead of
                                   silently downgrading to 8.1. Outputs HDR10 in that case.
 --temp-dir TEMP_DIR               Directory for DV temp files to avoid /tmp RAM exhaustion.
                                   Crucial for Linux systems using tmpfs for /tmp.
+--no-hdr10plus                    Ignore HDR10+ dynamic metadata even if present in the
+                                  source (encoded as HDR10 only). HDR10+ is auto-detected
+                                  and embedded by default when hdr10plus_tool is available.
+
+[ Quality validation ]
+--vmaf                            Measure VMAF/SSIM/PSNR on a 60s sample of the encoded
+                                  output after encoding. Results are added to the sidecar JSON.
+--vmaf-full                       Measure VMAF on the entire output file instead of a
+                                  sample. Significantly slower but exhaustive.
+--vmaf-sample-seconds SECONDS     Length of the central sample used by --vmaf
+                                  (default: 60s). Ignored with --vmaf-full.
+--vmaf-target SCORE               Calibrate the encoder's CRF before encoding to hit a
+                                  target VMAF score (e.g., 95). Encodes a 60s sample at
+                                  three CRFs, measures VMAF, and linearly interpolates.
+                                  Adds 3-5 minutes to a 4K encode but yields predictable
+                                  quality. Incompatible with Dolby Vision.
+
+[ Safety ]
+--skip-disk-check                 Skip the pre-encoding disk space check. Risky on long
+                                  encodes — failures near the end mean lost hours of CPU time.
+--no-integrity-check              Skip the post-encoding integrity verification (full
+                                  decode of the output). Saves a few minutes but you lose
+                                  the silent-corruption catch.
 
 [ Noise Reduction ]
 --no-denoise                      Disable adaptive noise reduction (auto-enabled for noisy sources)
---denoise-strength DENOISE_STRENGTH  Override denoise strength (0.0=off, 1.0=max). Default: auto
+--denoise-strength DENOISE_STRENGTH
+                                  Override denoise strength (0.0=off, 1.0=max). Default: auto
 --denoise-preserve-grain          Gentler denoise that preserves some film grain texture
 --denoise-engine {nlmeans,bm3d,hybrid}
-                                  Force a specific denoise engine instead of automatic 
-                                  selection. bm3d for maximum quality (3-5x slower), 
+                                  Force a specific denoise engine instead of automatic
+                                  selection. bm3d for maximum quality (3-5x slower),
                                   nlmeans for speed, hybrid for film grain
 
 [ Audio & Subtitles ]
 --no-audio                        Remove audio tracks (copied by default)
 --no-subs                         Remove subtitle tracks (copied by default)
---audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'fre,eng'). 
-                                  Removes unwanted dubs to save space.
+--audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'fre,eng').
+                                  Removes unwanted dubs to save space. The first language
+                                  listed becomes the player's default track.
 --downmix-audio                   Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0.
+--normalize-audio {off,single-pass,two-pass}
+                                  Apply EBU R128 loudness normalization to all kept audio
+                                  tracks. 'single-pass' uses dynamic linear normalization
+                                  (fast, less accurate). 'two-pass' measures the whole
+                                  file first then normalizes (slower but precise —
+                                  recommended). Re-encodes audio to AC3 at 640 kbps for
+                                  5.1 / 192 kbps for stereo.
+--normalize-audio-target LUFS     Integrated loudness target in LUFS (default: -16.0,
+                                  suited for TV/streaming. Use -23.0 for EBU R128 broadcast).
+
+[ Parallel chunked encoding (experimental) ]
+--parallel-chunks N               Encode N chunks in parallel (1 = monolithic encoding,
+                                  default). Splits the source at scene cuts into ~5 min
+                                  chunks and encodes them concurrently. Massive speedup
+                                  on multi-core boxes. Incompatible with Dolby Vision,
+                                  HDR10+, --per-scene-crf, --vmaf-target, and
+                                  --normalize-audio two-pass.
+--chunk-seconds CHUNK_SECONDS     Target chunk length in seconds for --parallel-chunks
+                                  (default: 300). Smaller = more parallelism, slightly
+                                  more container overhead. Larger = closer to monolithic.
+--resume                          Resume an interrupted chunked encode using its manifest
+                                  sidecar (<output>.chunks.json). Already-completed chunks
+                                  are skipped. Implies --parallel-chunks (use the same
+                                  value as the original run).
 
 [ System ]
 --verbose                         Display technical details of adaptive analysis
@@ -554,16 +687,16 @@ Get-ChildItem *.mkv | ForEach-Object {
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled — only mkvmerge and dovi_tool need to be installed separately.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled inside the binary. On Windows, `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` must be placed in the same folder as `adaptive-encoder.exe`.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. Particularly on Blu-ray remuxes with film grain (classics, horror, 35mm auteur films) or complex scenes (action, sci-fi).
 
 **Do I need to install ffmpeg separately?**
-No. ffmpeg and ffprobe are bundled inside the binary. Download, run, done.
+No. ffmpeg and ffprobe are bundled inside the binary. On Windows, place `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` in the same folder as the executable (see Installation).
 
-**Dolby Vision doesn't work — why?**
-`dovi_tool` must be installed separately (see Installation above). Without it, the encoder falls back to HDR10 only.
+**Do Dolby Vision and HDR10+ work automatically?**
+Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves the metadata with no configuration. If a source carries both (rare), Dolby Vision takes priority.
 
 **Does Profile 7 → 8.1 conversion work?**
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players.
