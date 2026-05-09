@@ -54,7 +54,7 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 | | Encodeurs génériques | ffmpeg manuel | **Adaptive Video Encoder** |
 |---|---|---|---|
 | Dolby Vision Profil 7 | ❌ Cassé | ⚠️ Possible avec `dovi_tool` + scripts | ✅ Automatique |
-| Préservation du grain | ❌ Lissé par défaut | ⚠️ Si vous savez quoi activer | ✅ Préservé automatiquement |
+| Préservation du grain | ❌ Lissé par défaut | ⚠️ Si vous savez quoi activer | ✅ Préservé par défaut, jamais touché sans `--denoise` |
 | Paramètres adaptés *par vidéo* | ❌ Préréglages fixes | ⚠️ Si vous testez vous-même | ✅ Analyse image par image |
 | HDR10 / HLG préservé | ⚠️ Parfois | ⚠️ Si vous savez quoi activer | ✅ Toujours |
 | Détection des bandes noires | ✅ | ⚠️ Manuel | ✅ Automatique |
@@ -66,7 +66,7 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 
 Beaucoup d'utilisateurs pensent à tort que cet outil est réservé à la 4K. **Ce n'est pas le cas.** Adaptive Video Encoder brille particulièrement sur les remux Blu-ray 1080p pour 3 raisons :
 
-**1. Préservation du grain cinématique.** Les films classiques, les films d'horreur, les films d'auteur récents en 35mm ont un grain qui fait partie de leur identité visuelle. La plupart des encodeurs le lissent par défaut. Adaptive Encoder le détecte et le préserve.
+**1. Préservation du grain cinématique.** Les films classiques, les films d'horreur, les films d'auteur récents en 35mm ont un grain qui fait partie de leur identité visuelle. La plupart des encodeurs le lissent par défaut. Adaptive Encoder ne touche jamais au grain sans votre accord explicite via `--denoise`.
 
 **2. Détection adaptative des scènes complexes.** Sur un film d'action 1080p, les scènes de combat ont une complexité radicalement différente des dialogues. L'analyse image par image ajuste les paramètres x265 en conséquence, là où les encodeurs génériques utilisent les mêmes réglages du début à la fin.
 
@@ -96,7 +96,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🔍 **Analyse adaptative** — détecte le bruit, le grain, la complexité, la densité de contours pour régler x265
 - 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites, préservées, réinjectées
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
-- 🎞️ **Préservation du grain** — pellicule 35mm, films d'horreur, sources granuleuses gérées automatiquement
+- 🎞️ **Grain préservé par défaut** — aucun débruitage appliqué sans `--denoise` explicite
 - ✂️ **Recadrage intelligent** — détecte les bandes noires sans couper accidentellement le contenu
 - 🔊 **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -197,27 +197,23 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Désactive la détection automatique des bandes noires
 --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
                                   Applique un tone mapping pour les écrans non-HDR.
---base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0, minimum : 18).
-                                  Une valeur plus basse offre une meilleure qualité, une valeur
-                                  plus élevée réduit la taille du fichier.
+--base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 19.0).
+                                  Calibré pour une qualité proche du remux Blu-ray.
+                                  Augmenter réduit la taille du fichier au détriment
+                                  de la qualité visuelle.
 
 [ Débit & Préréglages ]
---max-bitrate MAX_BITRATE         Force le débit max VBV (kbps)
+--max-bitrate MAX_BITRATE         Force le débit max VBV (kbps). Utile pour cibler
+                                  une taille de fichier précise.
 --vbv-bufsize VBV_BUFSIZE         Taille optionnelle du buffer VBV (kbits)
---no-vbv                          Désactive le plafonnement automatique VBV
+--vbv                             Active le plafonnement automatique du débit VBV
+                                  (~12 Mbps pour 1080p, adapté à la résolution).
+                                  Désactivé par défaut — le mode CRF pur donne plus
+                                  de bits aux scènes complexes et granuleuses.
 --no-veryslow                     Limite les préréglages à 'slower' au lieu de 'veryslow'
 --force-tune {grain,animation}    Force le preset tune x265. 'grain' préserve la structure
                                   du grain (psy-rd plus élevé). 'animation' optimise pour
                                   les zones plates et les bords nets.
---no-per-scene-crf                   Détecte les coupures de scène et applique un offset CRF par
-                                  scène selon la luminance et la complexité. Les scènes
-                                  sombres/statiques reçoivent +1.0 à +1.5 CRF (équivalent
-                                  visuel, fichiers plus compacts) ; les scènes riches en
-                                  détails reçoivent -0.5 CRF. Ajoute environ 1 minute de
-                                  pré-analyse sur un film de 2h.
-                                  Désactivé automatiquement sur les sources Dolby Vision
-                                  (incompatible avec l'injection RPU post-encodage) et avec
-                                  --parallel-chunks.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                 Ignore les métadonnées Dolby Vision, encode en HDR10 seul
@@ -253,15 +249,18 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   minutes mais perd la détection de corruption silencieuse.
 
 [ Réduction du bruit ]
---no-denoise                      Désactive la réduction de bruit adaptative
---denoise-strength DENOISE_STRENGTH
-                                  Force la force du débruitage (0.0=off, 1.0=max). Défaut : auto
+--denoise                         Active la réduction de bruit adaptative. Désactivée par
+                                  défaut pour préserver le grain cinématique des Blu-rays.
+                                  La force est calibrée automatiquement selon le niveau
+                                  de bruit/grain détecté dans la source.
+--denoise-strength STRENGTH       Force la force du débruitage (0.0=off, 1.0=max).
+                                  Implique --denoise quand > 0.
 --denoise-preserve-grain          Débruitage plus doux qui préserve une partie de la texture
-                                  du grain
+                                  du grain. Implique --denoise.
 --denoise-engine {nlmeans,bm3d,hybrid}
                                   Force un moteur de débruitage spécifique. bm3d pour la
                                   qualité maximale (3-5x plus lent), nlmeans pour la vitesse,
-                                  hybrid pour le grain cinématique.
+                                  hybrid pour le grain cinématique. Implique --denoise.
 
 [ Audio & Sous-titres ]
 --no-audio                        Supprime les pistes audio (copiées par défaut)
@@ -286,8 +285,8 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   défaut). Découpe la source aux coupures de scène en chunks
                                   d'environ 5 min et les encode simultanément. Énorme
                                   accélération sur les machines multi-cœurs. Incompatible
-                                  avec Dolby Vision, HDR10+, --per-scene-crf, --vmaf-target
-                                  et --normalize-audio two-pass.
+                                  avec Dolby Vision, HDR10+, --vmaf-target et
+                                  --normalize-audio two-pass.
 --chunk-seconds CHUNK_SECONDS     Durée cible d'un chunk en secondes pour --parallel-chunks
                                   (défaut : 300). Plus petit = plus de parallélisme,
                                   légèrement plus d'overhead conteneur. Plus grand = plus
@@ -322,7 +321,10 @@ Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes.
 
 **Pourquoi mes fichiers sont-ils plus lourds qu'avec d'autres encodeurs ?**
-Choix de conception délibéré — préservation maximale du détail et des métadonnées HDR. Pour limiter la taille du fichier, utilisez `--max-bitrate`.
+Choix de conception délibéré — préservation maximale du détail et des métadonnées HDR. Pour limiter la taille du fichier, utilisez `--max-bitrate` ou augmentez `--base-crf`.
+
+**Le grain de mes Blu-rays est-il préservé ?**
+Oui. Le débruitage est désactivé par défaut — aucun traitement n'est appliqué sur le grain sans votre accord explicite via `--denoise`. Le CRF adaptatif (base 19.0) traite le grain comme une feature à conserver, pas comme du bruit à éliminer.
 
 **Vitesse d'encodage ?**
 L'outil utilise les préréglages x265 `slower` ou `veryslow` — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`.
@@ -391,7 +393,7 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 | | Generic encoders | Manual ffmpeg | **Adaptive Video Encoder** |
 |---|---|---|---|
 | Dolby Vision Profile 7 | ❌ Broken | ⚠️ Possible with `dovi_tool` + scripting | ✅ Automatic |
-| Grain preservation | ❌ Smoothed by default | ⚠️ If you know what to flag | ✅ Preserved automatically |
+| Grain preservation | ❌ Smoothed by default | ⚠️ If you know what to flag | ✅ Preserved by default, never touched without `--denoise` |
 | Settings adapted *per video* | ❌ Fixed presets | ⚠️ If you test yourself | ✅ Frame-by-frame analysis |
 | HDR10 / HLG preserved | ⚠️ Sometimes | ⚠️ If you know what to flag | ✅ Always |
 | Black bar detection | ✅ | ⚠️ Manual | ✅ Automatic |
@@ -403,7 +405,7 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 
 Many users mistakenly think this tool is only for 4K. **It's not.** Adaptive Video Encoder shines particularly well on 1080p Blu-ray remuxes for 3 reasons:
 
-**1. Film grain preservation.** Classic films, horror movies, recent 35mm auteur films have grain that's part of their visual identity. Most encoders smooth it by default. Adaptive Encoder detects and preserves it.
+**1. Film grain preservation.** Classic films, horror movies, recent 35mm auteur films have grain that's part of their visual identity. Most encoders smooth it by default. Adaptive Encoder never touches grain without your explicit `--denoise` flag.
 
 **2. Adaptive complex scene detection.** On a 1080p action film, fight scenes have radically different complexity than dialogue. Frame-by-frame analysis adjusts x265 parameters accordingly, where generic encoders use the same settings start to finish.
 
@@ -433,7 +435,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🔍 **Adaptive analysis** — detects noise, grain, complexity, edge density to tune x265
 - 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted, preserved, reinjected
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
-- 🎞️ **Grain preservation** — 35mm film, horror movies, grainy sources handled automatically
+- 🎞️ **Grain preserved by default** — no denoising ever applied without explicit `--denoise`
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -534,26 +536,22 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Disable automatic black bar detection
 --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR.
                                   Applies tone mapping for non-HDR display compatibility.
---base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0, minimum: 18).
-                                  Lower values provide better quality, higher values reduce
-                                  file size.
+--base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 19.0).
+                                  Tuned for near-remux Blu-ray quality. Raise to reduce
+                                  file size at the cost of visible quality loss on
+                                  cinema content.
 
 [ Bitrate & Presets ]
---max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps)
+--max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps). Useful for targeting
+                                  a specific file size.
 --vbv-bufsize VBV_BUFSIZE         Optional VBV buffer size (kbits)
---no-vbv                          Disable automatic VBV bitrate capping
+--vbv                             Enable automatic VBV bitrate cap (~12 Mbps for 1080p,
+                                  scaled by resolution). Off by default — pure CRF mode
+                                  gives complex/grainy scenes all the bits they need.
 --no-veryslow                     Limit presets to 'slower' instead of 'veryslow'
 --force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain
                                   structure (higher psy-rd). 'animation' optimizes for
                                   flat areas and sharp edges.
---no-per-scene-crf                   Detect scene cuts and apply a per-scene CRF offset based
-                                  on luminance and complexity. Dark/static scenes get +1.0
-                                  to +1.5 CRF (visually equivalent, smaller files);
-                                  detail-rich scenes get -0.5 CRF. Adds about 1 minute of
-                                  pre-analysis on a 2h film.
-                                  Automatically disabled on Dolby Vision sources
-                                  (incompatible with post-encode RPU injection) and with
-                                  --parallel-chunks.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                 Ignore Dolby Vision metadata, encode as HDR10 only
@@ -587,14 +585,18 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   the silent-corruption catch.
 
 [ Noise Reduction ]
---no-denoise                      Disable adaptive noise reduction (auto-enabled for noisy sources)
---denoise-strength DENOISE_STRENGTH
-                                  Override denoise strength (0.0=off, 1.0=max). Default: auto
---denoise-preserve-grain          Gentler denoise that preserves some film grain texture
+--denoise                         Enable adaptive noise reduction. Off by default to
+                                  preserve film grain on Blu-ray and cinema content.
+                                  Strength is auto-calibrated from source noise/grain
+                                  metrics.
+--denoise-strength STRENGTH       Override denoise strength (0.0=off, 1.0=max).
+                                  Implies --denoise when > 0.
+--denoise-preserve-grain          Gentler denoise that preserves some film grain texture.
+                                  Implies --denoise.
 --denoise-engine {nlmeans,bm3d,hybrid}
-                                  Force a specific denoise engine instead of automatic
-                                  selection. bm3d for maximum quality (3-5x slower),
-                                  nlmeans for speed, hybrid for film grain
+                                  Force a specific denoise engine. bm3d for maximum
+                                  quality (3-5x slower), nlmeans for speed, hybrid for
+                                  film grain. Implies --denoise.
 
 [ Audio & Subtitles ]
 --no-audio                        Remove audio tracks (copied by default)
@@ -618,8 +620,7 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   default). Splits the source at scene cuts into ~5 min
                                   chunks and encodes them concurrently. Massive speedup
                                   on multi-core boxes. Incompatible with Dolby Vision,
-                                  HDR10+, --per-scene-crf, --vmaf-target, and
-                                  --normalize-audio two-pass.
+                                  HDR10+, --vmaf-target, and --normalize-audio two-pass.
 --chunk-seconds CHUNK_SECONDS     Target chunk length in seconds for --parallel-chunks
                                   (default: 300). Smaller = more parallelism, slightly
                                   more container overhead. Larger = closer to monolithic.
@@ -653,7 +654,10 @@ Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 20
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players.
 
 **Why are my files larger than with other encoders?**
-Intentional design choice — maximum detail and HDR metadata preservation. To cap file size, use `--max-bitrate`.
+Intentional design choice — maximum detail and HDR metadata preservation. To reduce file size, use `--max-bitrate` or raise `--base-crf`.
+
+**Is film grain preserved?**
+Yes. Noise reduction is off by default — no processing is ever applied to grain without your explicit `--denoise` flag. The adaptive CRF (base 19.0) treats grain as a feature to keep, not noise to eliminate.
 
 **Encoding speed?**
 The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
