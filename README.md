@@ -209,7 +209,7 @@ Get-ChildItem *.mkv | ForEach-Object {
 --force-tune {grain,animation}    Force le preset tune x265. 'grain' préserve la structure
                                   du grain (psy-rd plus élevé). 'animation' optimise pour
                                   les zones plates et les bords nets.
---per-scene-crf                   Détecte les coupures de scène et applique un offset CRF par
+--no-per-scene-crf                   Détecte les coupures de scène et applique un offset CRF par
                                   scène selon la luminance et la complexité. Les scènes
                                   sombres/statiques reçoivent +1.0 à +1.5 CRF (équivalent
                                   visuel, fichiers plus compacts) ; les scènes riches en
@@ -546,7 +546,7 @@ Get-ChildItem *.mkv | ForEach-Object {
 --force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain
                                   structure (higher psy-rd). 'animation' optimizes for
                                   flat areas and sharp edges.
---per-scene-crf                   Detect scene cuts and apply a per-scene CRF offset based
+--no-per-scene-crf                   Detect scene cuts and apply a per-scene CRF offset based
                                   on luminance and complexity. Dark/static scenes get +1.0
                                   to +1.5 CRF (visually equivalent, smaller files);
                                   detail-rich scenes get -0.5 CRF. Adds about 1 minute of
