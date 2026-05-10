@@ -97,6 +97,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites, préservées, réinjectées
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
 - 🎞️ **Grain préservé par défaut** — aucun débruitage appliqué sans `--denoise` explicite
+- 🧹 **Mode nettoyage gros grain** — chaîne `atadenoise+vaguedenoiser` opt-in via `--manual-grain-clean` pour les films au grain trop marqué
 - ✂️ **Recadrage intelligent** — détecte les bandes noires sans couper accidentellement le contenu
 - 🔊 **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -158,6 +159,11 @@ chmod +x ./adaptive-encoder
 **Mode test — analyser sans encoder :**
 ```bash
 ./adaptive-encoder "mon_film.mkv" --dry-run
+```
+
+**Film à gros grain — nettoyage propre :**
+```bash
+./adaptive-encoder "vieux_film_35mm.mkv" --manual-grain-clean
 ```
 
 ---
@@ -236,10 +242,25 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   Implique --denoise quand > 0.
 --denoise-preserve-grain          Débruitage plus doux qui préserve une partie de la texture
                                   du grain. Implique --denoise.
---denoise-engine {nlmeans,bm3d,hybrid}
-                                  Force un moteur de débruitage spécifique. bm3d pour la
-                                  qualité maximale (3-5x plus lent), nlmeans pour la vitesse,
-                                  hybrid pour le grain cinématique. Implique --denoise.
+--denoise-engine {auto,nlmeans,bm3d,hybrid,atadenoise,wavelet,fftdnoiz,grain-clean}
+                                  Force un moteur de débruitage spécifique au lieu de la
+                                  sélection automatique. 'grain-clean' chaîne
+                                  atadenoise+vaguedenoiser — idéal pour gros grain
+                                  cinématique. 'atadenoise' seul, rapide et excellent
+                                  sur grain modéré (moyenne temporelle à seuil de
+                                  mouvement). 'wavelet' (vaguedenoiser) doux, préserve
+                                  les détails fins via ondelettes. 'fftdnoiz' débruiteur
+                                  FFT 3D. 'bm3d' qualité maximale sur bruit stationnaire
+                                  (3-5x plus lent). 'nlmeans' rapide. 'hybrid' mixe
+                                  hqdn3d+nlmeans. Implique --denoise.
+--manual-grain-clean              Mode manuel haute qualité pour films à gros grain.
+                                  Active la chaîne atadenoise + vaguedenoiser avec force
+                                  calibrée automatiquement à partir des niveaux de grain
+                                  et bruit détectés. Équivalent à
+                                  `--denoise --denoise-engine grain-clean` mais avec un
+                                  plancher de force ≥ 0.55 pour garantir un nettoyage
+                                  efficace. CPU uniquement, surcoût ~0.4× temps réel
+                                  sur 1080p.
 
 [ Audio & Sous-titres ]
 --no-audio                        Supprime les pistes audio (copiées par défaut)
@@ -303,6 +324,9 @@ Choix de conception délibéré — préservation maximale du détail et des mé
 
 **Le grain de mes Blu-rays est-il préservé ?**
 Oui. Le débruitage est désactivé par défaut — aucun traitement n'est appliqué sur le grain sans votre accord explicite via `--denoise`. Le CRF adaptatif (base 22.0) traite le grain comme une feature à conserver, pas comme du bruit à éliminer.
+
+**J'ai un film au grain vraiment trop marqué, comment le nettoyer proprement ?**
+Utilisez `--manual-grain-clean`. Ce mode active une chaîne dédiée `atadenoise + vaguedenoiser` qui attaque le grain temporel (frame-à-frame) puis le résidu spatial via ondelettes, sans effet plastique sur la peau ou les détails fins. La force est auto-calibrée selon le niveau de grain détecté, avec un plancher minimum pour garantir un résultat propre.
 
 **Vitesse d'encodage ?**
 L'outil utilise les préréglages x265 `slower` ou `veryslow` — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`.
@@ -414,6 +438,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted, preserved, reinjected
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
 - 🎞️ **Grain preserved by default** — no denoising ever applied without explicit `--denoise`
+- 🧹 **Heavy-grain cleanup mode** — opt-in `atadenoise+vaguedenoiser` chain via `--manual-grain-clean` for films where the grain is too heavy to keep
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -475,6 +500,11 @@ chmod +x ./adaptive-encoder
 **Test mode — analyze without encoding:**
 ```bash
 ./adaptive-encoder "my_movie.mkv" --dry-run
+```
+
+**Heavy-grain film — clean cleanup:**
+```bash
+./adaptive-encoder "old_35mm_film.mkv" --manual-grain-clean
 ```
 
 ---
@@ -551,10 +581,23 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   Implies --denoise when > 0.
 --denoise-preserve-grain          Gentler denoise that preserves some film grain texture.
                                   Implies --denoise.
---denoise-engine {nlmeans,bm3d,hybrid}
-                                  Force a specific denoise engine. bm3d for maximum
-                                  quality (3-5x slower), nlmeans for speed, hybrid for
-                                  film grain. Implies --denoise.
+--denoise-engine {auto,nlmeans,bm3d,hybrid,atadenoise,wavelet,fftdnoiz,grain-clean}
+                                  Force a specific denoise engine instead of automatic
+                                  selection. 'grain-clean' chains atadenoise+vaguedenoiser
+                                  — ideal for heavy film grain. 'atadenoise' alone is fast
+                                  and excellent on moderate grain (motion-thresholded
+                                  temporal averaging). 'wavelet' (vaguedenoiser) is gentle
+                                  and preserves fine detail via wavelets. 'fftdnoiz' is a
+                                  3D FFT denoiser. 'bm3d' for max quality on stationary
+                                  noise (3-5x slower). 'nlmeans' for speed. 'hybrid' mixes
+                                  hqdn3d+nlmeans. Implies --denoise.
+--manual-grain-clean              Manual high-quality cleanup mode for films with heavy
+                                  grain. Activates the atadenoise + vaguedenoiser chain
+                                  with strength auto-calibrated from detected grain/noise
+                                  levels. Equivalent to
+                                  `--denoise --denoise-engine grain-clean` but with a
+                                  strength floor of ≥ 0.55 to guarantee effective cleanup.
+                                  CPU-only, ~0.4× realtime additional cost on 1080p.
 
 [ Audio & Subtitles ]
 --no-audio                        Remove audio tracks (copied by default)
@@ -616,6 +659,9 @@ Intentional design choice — maximum detail and HDR metadata preservation. To r
 
 **Is film grain preserved?**
 Yes. Noise reduction is off by default — no processing is ever applied to grain without your explicit `--denoise` flag. The adaptive CRF (base 22.0) treats grain as a feature to keep, not noise to eliminate.
+
+**My film has really heavy grain — how do I clean it up properly?**
+Use `--manual-grain-clean`. This mode activates a dedicated `atadenoise + vaguedenoiser` chain that attacks temporal grain frame-to-frame first, then cleans the spatial residue via wavelets — without the plastic look on skin or fine detail. Strength is auto-calibrated from the detected grain level, with a minimum floor to guarantee a clean result.
 
 **Encoding speed?**
 The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
