@@ -285,7 +285,8 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   défaut). Découpe la source aux coupures de scène en chunks
                                   d'environ 5 min et les encode simultanément. Énorme
                                   accélération sur les machines multi-cœurs. Incompatible
-                                  avec Dolby Vision, HDR10+ et --normalize-audio two-pass.
+                                  avec Dolby Vision, HDR10+, --normalize-audio
+                                  et --downmix-audio.
 --chunk-seconds CHUNK_SECONDS     Durée cible d'un chunk en secondes pour --parallel-chunks
                                   (défaut : 300). Plus petit = plus de parallélisme,
                                   légèrement plus d'overhead conteneur. Plus grand = plus
@@ -621,7 +622,7 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   default). Splits the source at scene cuts into ~5 min
                                   chunks and encodes them concurrently. Massive speedup
                                   on multi-core boxes. Incompatible with Dolby Vision,
-                                  HDR10+, and --normalize-audio two-pass.
+                                  HDR10+, --normalize-audio, and --downmix-audio.
 --chunk-seconds CHUNK_SECONDS     Target chunk length in seconds for --parallel-chunks
                                   (default: 300). Smaller = more parallelism, slightly
                                   more container overhead. Larger = closer to monolithic.
