@@ -197,8 +197,9 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Désactive la détection automatique des bandes noires
 --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
                                   Applique un tone mapping pour les écrans non-HDR.
---base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 19.0).
-                                  Calibré pour une qualité proche du remux Blu-ray.
+--base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0).
+                                  Calibré pour un bon équilibre qualité/taille (~50% de
+                                  réduction sur les remux Blu-ray typiques).
                                   Augmenter réduit la taille du fichier au détriment
                                   de la qualité visuelle.
 
@@ -225,14 +226,6 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-hdr10plus                    Ignore les métadonnées dynamiques HDR10+ même si présentes
                                   dans la source (encodé en HDR10 seul). HDR10+ est détecté
                                   et embarqué automatiquement.
-
-[ Sécurité ]
---skip-disk-check                 Désactive la vérification d'espace disque pré-encodage.
-                                  Risqué sur les longs encodages — un échec en fin de course
-                                  coûte des heures de CPU.
---no-integrity-check              Désactive la vérification d'intégrité post-encodage
-                                  (décodage complet de la sortie). Économise quelques
-                                  minutes mais perd la détection de corruption silencieuse.
 
 [ Réduction du bruit ]
 --denoise                         Active la réduction de bruit adaptative. Désactivée par
@@ -271,8 +264,7 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   défaut). Découpe la source aux coupures de scène en chunks
                                   d'environ 5 min et les encode simultanément. Énorme
                                   accélération sur les machines multi-cœurs. Incompatible
-                                  avec Dolby Vision, HDR10+, --vmaf-target et
-                                  --normalize-audio two-pass.
+                                  avec Dolby Vision, HDR10+ et --normalize-audio two-pass.
 --chunk-seconds CHUNK_SECONDS     Durée cible d'un chunk en secondes pour --parallel-chunks
                                   (défaut : 300). Plus petit = plus de parallélisme,
                                   légèrement plus d'overhead conteneur. Plus grand = plus
@@ -310,7 +302,7 @@ Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et ré
 Choix de conception délibéré — préservation maximale du détail et des métadonnées HDR. Pour limiter la taille du fichier, utilisez `--max-bitrate` ou augmentez `--base-crf`.
 
 **Le grain de mes Blu-rays est-il préservé ?**
-Oui. Le débruitage est désactivé par défaut — aucun traitement n'est appliqué sur le grain sans votre accord explicite via `--denoise`. Le CRF adaptatif (base 19.0) traite le grain comme une feature à conserver, pas comme du bruit à éliminer.
+Oui. Le débruitage est désactivé par défaut — aucun traitement n'est appliqué sur le grain sans votre accord explicite via `--denoise`. Le CRF adaptatif (base 22.0) traite le grain comme une feature à conserver, pas comme du bruit à éliminer.
 
 **Vitesse d'encodage ?**
 L'outil utilise les préréglages x265 `slower` ou `veryslow` — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`.
@@ -522,10 +514,10 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-crop-detect                  Disable automatic black bar detection
 --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR.
                                   Applies tone mapping for non-HDR display compatibility.
---base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 19.0).
-                                  Tuned for near-remux Blu-ray quality. Raise to reduce
-                                  file size at the cost of visible quality loss on
-                                  cinema content.
+--base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0).
+                                  Tuned for a good quality/size balance (~50% reduction
+                                  on typical Blu-ray remuxes). Raise to reduce file size
+                                  further; lower for closer-to-remux quality.
 
 [ Bitrate & Presets ]
 --max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps). Useful for targeting
@@ -549,13 +541,6 @@ Get-ChildItem *.mkv | ForEach-Object {
 --no-hdr10plus                    Ignore HDR10+ dynamic metadata even if present in the
                                   source (encoded as HDR10 only). HDR10+ is auto-detected
                                   and embedded by default.
-
-[ Safety ]
---skip-disk-check                 Skip the pre-encoding disk space check. Risky on long
-                                  encodes — failures near the end mean lost hours of CPU time.
---no-integrity-check              Skip the post-encoding integrity verification (full
-                                  decode of the output). Saves a few minutes but you lose
-                                  the silent-corruption catch.
 
 [ Noise Reduction ]
 --denoise                         Enable adaptive noise reduction. Off by default to
@@ -593,7 +578,7 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   default). Splits the source at scene cuts into ~5 min
                                   chunks and encodes them concurrently. Massive speedup
                                   on multi-core boxes. Incompatible with Dolby Vision,
-                                  HDR10+, --vmaf-target, and --normalize-audio two-pass.
+                                  HDR10+, and --normalize-audio two-pass.
 --chunk-seconds CHUNK_SECONDS     Target chunk length in seconds for --parallel-chunks
                                   (default: 300). Smaller = more parallelism, slightly
                                   more container overhead. Larger = closer to monolithic.
@@ -630,7 +615,7 @@ Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, c
 Intentional design choice — maximum detail and HDR metadata preservation. To reduce file size, use `--max-bitrate` or raise `--base-crf`.
 
 **Is film grain preserved?**
-Yes. Noise reduction is off by default — no processing is ever applied to grain without your explicit `--denoise` flag. The adaptive CRF (base 19.0) treats grain as a feature to keep, not noise to eliminate.
+Yes. Noise reduction is off by default — no processing is ever applied to grain without your explicit `--denoise` flag. The adaptive CRF (base 22.0) treats grain as a feature to keep, not noise to eliminate.
 
 **Encoding speed?**
 The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
@@ -645,4 +630,3 @@ Open an issue on GitHub or ask on Discord — happy to help.
 - 💬 **Discord** (fast replies): [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
 - 📧 **Email**: [osx300@gmail.com](mailto:osx300@gmail.com)
 - ☕ **Buy me a coffee** (optional): [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
-
