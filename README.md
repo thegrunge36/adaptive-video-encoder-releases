@@ -99,7 +99,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
 - 🎞️ **Grain préservé par défaut** — aucun débruitage appliqué sans `--denoise` explicite
 - 🧹 **Mode nettoyage gros grain** — chaîne `atadenoise+vaguedenoiser` opt-in via `--manual-grain-clean` pour les films au grain trop marqué
-- 🌑 **Anti-banding adaptatif** — détecte les scènes sombres à faible grain (où le banding apparaît) et applique `gradfun` + `SAO` ciblé + bonus CRF pour lisser les dégradés sans toucher au reste du film. Désactivable via `--no-debanding`.
+- 🌑 **Anti-banding adaptatif** — détecte les scènes sombres à faible grain (où le banding apparaît) et applique `deband` (10-bit natif) + `SAO` ciblé + bonus CRF pour lisser les dégradés sans toucher au reste du film. Désactivable via `--no-debanding`.
 - ✂️ **Recadrage intelligent** — détecte les bandes noires sans couper accidentellement le contenu
 - 🔊 **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -211,11 +211,11 @@ Get-ChildItem *.mkv | ForEach-Object {
 --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
                                   Applique un tone mapping pour les écrans non-HDR.
 --no-debanding                    Désactive toute la chaîne anti-banding ajoutée par défaut :
-                                  filtre gradfun final, deband libplacebo sur le chemin
+                                  filtre deband final (10-bit natif), deband libplacebo sur le chemin
                                   HDR→SDR, activation conditionnelle du SAO sur scènes
                                   sombres, et bonus CRF appliqué aux plans à forte fraction
                                   de bas-noirs. À utiliser sur les films à très gros grain
-                                  où gradfun pourrait lisser la texture, ou pour reproduire
+                                  où le deband lisse trop la texture, ou pour reproduire
                                   le comportement de l'encodeur avant l'ajout de la chaîne
                                   anti-banding. Off par défaut (anti-banding actif).
 --base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0).
@@ -345,7 +345,7 @@ Oui. Le débruitage est désactivé par défaut — aucun traitement n'est appli
 Utilisez `--manual-grain-clean`. Ce mode active une chaîne dédiée `atadenoise + vaguedenoiser` qui attaque le grain temporel (frame-à-frame) puis le résidu spatial via ondelettes, sans effet plastique sur la peau ou les détails fins. La force est auto-calibrée selon le niveau de grain détecté, avec un plancher minimum pour garantir un résultat propre.
 
 **Qu'est-ce que l'anti-banding adaptatif et quand le désactiver ?**
-Le banding (paliers de couleur visibles dans les dégradés sombres ou les ciels) est un artefact classique de l'encodage H.265 sur les scènes à dynamique limitée. Adaptive Video Encoder détecte automatiquement les plans à risque (forte fraction de pixels sombres, faible niveau de grain) et active une chaîne ciblée : `gradfun` en post-filtrage, `SAO` selectif sur I-frames, et un léger bonus CRF pour mieux allouer les bits à ces zones. Le grain n'est pas affecté car la chaîne se déclenche uniquement quand le grain détecté est bas. **À désactiver via `--no-debanding`** dans deux cas : (1) film à très gros grain sur toute sa durée où gradfun risquerait de lisser la texture, (2) pour reproduire le comportement de l'encodeur avant l'ajout de cette chaîne (encodes legacy).
+Le banding (paliers de couleur visibles dans les dégradés sombres ou les ciels) est un artefact classique de l'encodage H.265 sur les scènes à dynamique limitée. Adaptive Video Encoder détecte automatiquement les plans à risque (forte fraction de pixels sombres, faible niveau de grain) et active une chaîne ciblée : filtre `deband` 10-bit natif (aucun round-trip de conversion), `SAO` sélectif sur I-frames, et un léger bonus CRF pour mieux allouer les bits à ces zones. Le grain n'est pas affecté car la chaîne se déclenche uniquement quand le grain détecté est bas. **À désactiver via `--no-debanding`** dans deux cas : (1) film à très gros grain sur toute sa durée où le deband risquerait de lisser la texture, (2) pour reproduire le comportement de l'encodeur avant l'ajout de cette chaîne (encodes legacy).
 
 **Vitesse d'encodage ?**
 L'outil utilise les préréglages x265 `slower` ou `veryslow` — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`.
@@ -459,7 +459,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
 - 🎞️ **Grain preserved by default** — no denoising ever applied without explicit `--denoise`
 - 🧹 **Heavy-grain cleanup mode** — opt-in `atadenoise+vaguedenoiser` chain via `--manual-grain-clean` for films where the grain is too heavy to keep
-- 🌑 **Adaptive anti-banding** — detects dark scenes with low grain (where banding shows) and applies `gradfun` + targeted `SAO` + a small CRF bonus to smooth gradients without touching the rest of the film. Disable via `--no-debanding`.
+- 🌑 **Adaptive anti-banding** — detects dark scenes with low grain (where banding shows) and applies `deband` (native 10-bit, no lossy round-trip) + targeted `SAO` + a small CRF bonus to smooth gradients without touching the rest of the film. Disable via `--no-debanding`.
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
@@ -571,11 +571,11 @@ Get-ChildItem *.mkv | ForEach-Object {
 --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR.
                                   Applies tone mapping for non-HDR display compatibility.
 --no-debanding                    Disable the full anti-banding chain that runs by default:
-                                  final gradfun post-filter, libplacebo deband on the
+                                  final deband filter (native 10-bit), libplacebo deband on the
                                   HDR→SDR path, conditional SAO activation on dark scenes,
                                   and the CRF bonus applied to dark-fraction-heavy shots.
                                   Use this on films with very heavy grain throughout where
-                                  gradfun could smooth texture, or to reproduce the
+                                  deband smooths too much texture, or to reproduce the
                                   encoder behavior from before the anti-banding chain was
                                   added (legacy encodes). Off by default (anti-banding on).
 --base-crf BASE_CRF               Shifts the adaptive CRF baseline (default: 22.0).
@@ -698,7 +698,7 @@ Yes. Noise reduction is off by default — no processing is ever applied to grai
 Use `--manual-grain-clean`. This mode activates a dedicated `atadenoise + vaguedenoiser` chain that attacks temporal grain frame-to-frame first, then cleans the spatial residue via wavelets — without the plastic look on skin or fine detail. Strength is auto-calibrated from the detected grain level, with a minimum floor to guarantee a clean result.
 
 **What is adaptive anti-banding and when should I turn it off?**
-Banding (visible color steps in dark gradients or skies) is a classic H.265 artifact on scenes with limited dynamic range. Adaptive Video Encoder automatically detects at-risk shots (high dark-pixel fraction, low grain level) and triggers a targeted chain: `gradfun` post-filter, `SAO` selectively enabled on I-frames, and a small CRF bonus to better allocate bits to those zones. Grain isn't affected because the chain only fires when detected grain is low. **Disable via `--no-debanding`** in two cases: (1) films with heavy grain throughout where gradfun might smooth texture, (2) to reproduce the encoder's behavior before this chain was added (legacy encodes).
+Banding (visible color steps in dark gradients or skies) is a classic H.265 artifact on scenes with limited dynamic range. Adaptive Video Encoder automatically detects at-risk shots (high dark-pixel fraction, low grain level) and triggers a targeted chain: native 10-bit `deband` filter (no lossy format round-trip), `SAO` selectively enabled on I-frames, and a small CRF bonus to better allocate bits to those zones. Grain isn't affected because the chain only fires when detected grain is low. **Disable via `--no-debanding`** in two cases: (1) films with heavy grain throughout where deband smooths too much texture, (2) to reproduce the encoder's behavior before this chain was added (legacy encodes).
 
 **Encoding speed?**
 The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
