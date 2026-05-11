@@ -197,7 +197,7 @@ done
 ```powershell
 # 🪟 Windows
 Get-ChildItem *.mkv | ForEach-Object {
-    adaptive-encoder.exe $_.FullName
+    .\adaptive-encoder.exe $_.FullName
 }
 ```
 
@@ -493,7 +493,7 @@ chmod +x ./adaptive-encoder
 ./adaptive-encoder "my_movie.mkv"
 
 # 🪟 Windows (PowerShell or CMD)
-adaptive-encoder.exe "my_movie.mkv"
+.\adaptive-encoder.exe "my_movie.mkv"
 ```
 
 > 💡 **Windows tip:** Shift + right-click in the folder → "Open PowerShell window here"
