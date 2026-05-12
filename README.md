@@ -96,7 +96,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎚️ **Paramètres x265 calibrés sur les métriques** — preset (entre `medium` et `veryslow`), CRF, psy-rd, psy-rdoq, aq-mode, aq-strength, deblock, SAO, ref, bframes, me, rdoq-level — tous ajustés au contenu réel
 - 📐 **Adaptation à la résolution** — `ctu`, `qg-size` et cap VBV auto-réglés selon les pixels effectifs (post-crop)
 - 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites via `dovi_tool`, préservées, réinjectées. Profil 7 converti en 8.1 par défaut (compatible avec la majorité des lecteurs DV). Option `--preserve-dv-profile` pour sortir en HDR10 plutôt qu'accepter la conversion.
-- 🌟 **HDR10+ (SMPTE 2094-40)** — métadonnées dynamiques auto-détectées via `hdr10plus_tool`, extraites en JSON puis réinjectées dans le bitstream HEVC via le paramètre x265 `dhdr10-info`. DV prend priorité quand les deux sont présents.
+- 🌟 **HDR10+ (SMPTE 2094-40)** — métadonnées dynamiques auto-détectées via `hdr10plus_tool`, extraites en JSON puis réinjectées dans le bitstream HEVC via le paramètre x265 `dhdr10-info`. DV et HDR10+ coexistent dans le même bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40.
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
 - 🌑 **Débruitage adaptatif** — force calibrée automatiquement à partir du bruit/grain mesurés ; si le score combiné est sous le seuil (~0.08), aucun filtre n'est appliqué. Trois moteurs : `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans), plus `auto`. Option `--denoise-preserve-grain` pour ne lisser qu'une fraction de la texture.
 - 🔊 **Normalisation audio EBU R128** — mode `single-pass` (loudnorm dynamique) ou `two-pass` (mesure puis correction linéaire — recommandé). Cible LUFS configurable.
@@ -252,9 +252,9 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   saturation RAM de /tmp. Crucial sur Linux avec tmpfs.
 --no-hdr10plus                    Ignore les métadonnées dynamiques HDR10+ même si présentes
                                   dans la source (encodé en HDR10 seul). HDR10+ est détecté
-                                  et embarqué automatiquement via hdr10plus_tool quand aucun
-                                  Dolby Vision n'est actif (le DV est prioritaire si les
-                                  deux sont présents).
+                                  et embarqué automatiquement via hdr10plus_tool, y compris
+                                  en présence de Dolby Vision — les deux couches coexistent
+                                  dans le bitstream HEVC.
 
 [ Réduction du bruit ]
 --no-denoise                      Désactive la réduction de bruit adaptative. Par défaut
@@ -313,7 +313,7 @@ Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size
 Non. `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont tous intégrés dans le binaire sur les trois plateformes. Téléchargez et lancez, c'est tout.
 
 **Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
-Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées sans configuration. Si la source contient les deux (rare), Dolby Vision prend la priorité car les deux portent du tone-mapping par frame et seul un peut être affiché à la fois sur la TV.
+Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées sans configuration. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
 
 **La conversion Profil 7 → 8.1 fonctionne ?**
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
@@ -436,7 +436,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🎚️ **x265 parameters tuned to the metrics** — preset (between `medium` and `veryslow`), CRF, psy-rd, psy-rdoq, aq-mode, aq-strength, deblock, SAO, ref, bframes, me, rdoq-level — all adjusted to the actual content
 - 📐 **Resolution-aware** — `ctu`, `qg-size` and VBV cap auto-tuned from effective pixels (post-crop)
 - 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted via `dovi_tool`, preserved, reinjected. Profile 7 converted to 8.1 by default (compatible with most DV players). `--preserve-dv-profile` outputs HDR10 instead of accepting the conversion.
-- 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream via the x265 `dhdr10-info` parameter. DV takes priority when both are present.
+- 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream via the x265 `dhdr10-info` parameter. DV and HDR10+ coexist in the same HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI.
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
 - 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain; if the combined score is below threshold (~0.08), no filter is applied. Three engines: `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans), plus `auto`. `--denoise-preserve-grain` smooths only a fraction of the texture.
 - 🔊 **EBU R128 audio normalization** — `single-pass` mode (dynamic loudnorm) or `two-pass` (measure then linear correction — recommended). Configurable LUFS target.
@@ -452,7 +452,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 
 | Platform | Status | Notes |
 |---|---|---|
-| 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
+| 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Fedora 40+ |
 | 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD |
 | 🍎 macOS (Apple Silicon) | ✅ Supported | M1, M2, M3 — native arm64 binary |
 
@@ -591,9 +591,9 @@ Get-ChildItem *.mkv | ForEach-Object {
                                   Crucial for Linux systems using tmpfs for /tmp.
 --no-hdr10plus                    Ignore HDR10+ dynamic metadata even if present in the
                                   source (encoded as HDR10 only). HDR10+ is auto-detected
-                                  and embedded by default via hdr10plus_tool when no
-                                  Dolby Vision is active (DV takes priority when both are
-                                  present).
+                                  and embedded by default via hdr10plus_tool, including
+                                  alongside Dolby Vision — both metadata layers coexist
+                                  in the HEVC bitstream.
 
 [ Noise Reduction ]
 --no-denoise                      Disable the adaptive noise reduction. By default
@@ -651,7 +651,7 @@ No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, pres
 No. `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are all bundled inside the binary on all three platforms. Download and run — that's it.
 
 **Do Dolby Vision and HDR10+ work automatically?**
-Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves the metadata with no configuration. If a source carries both (rare), Dolby Vision takes priority since both carry per-frame tone-mapping and only one can be active on the display at a time.
+Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
 
 **Does Profile 7 → 8.1 conversion work?**
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
