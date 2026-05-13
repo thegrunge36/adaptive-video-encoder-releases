@@ -145,20 +145,34 @@ Après ça, macOS ne vous avertira plus jamais pour ce fichier.
 
 ---
 
-## 🚀 Démarrage rapide
+## 🚀 Démarrage rapide — un seul fichier
 
-```bash
-# 🐧 Linux / 🍎 macOS
-chmod +x ./adaptive-encoder
-./adaptive-encoder "mon_film.mkv"
+### 🪟 Windows — étape par étape
 
-# 🪟 Windows (PowerShell ou CMD)
+**1. Placez `adaptive-encoder.exe` dans le dossier qui contient votre vidéo.**
+
+**2. Ouvrez PowerShell *dans ce dossier*.** Maintenez `Shift` puis clic droit dans une zone vide du dossier → **"Ouvrir la fenêtre PowerShell ici"**.
+
+> ✅ Vérifiez que le prompt commence par `PS C:\...>`. Si vous voyez juste `C:\...>`, vous êtes dans CMD. Les deux fonctionnent, mais la syntaxe diffère (voir plus bas).
+
+**3. Lancez la commande :**
+
+```powershell
 .\adaptive-encoder.exe "mon_film.mkv"
 ```
 
-> 💡 **Astuce Windows :** Shift + clic droit dans le dossier → "Ouvrir la fenêtre PowerShell ici"
+Le fichier de sortie sera créé à côté, nommé `mon_film_adaptive.mkv`.
 
-**Mode test — analyser sans encoder :**
+### 🐧 Linux / 🍎 macOS
+
+```bash
+chmod +x ./adaptive-encoder
+./adaptive-encoder "mon_film.mkv"
+```
+
+### Variantes utiles
+
+**Mode test — analyser sans encoder (toujours faire ça en premier sur un nouveau type de source) :**
 ```bash
 ./adaptive-encoder "mon_film.mkv" --dry-run
 ```
@@ -185,23 +199,78 @@ chmod +x ./adaptive-encoder
 
 ---
 
-## 🗂️ Encoder une bibliothèque entière
+## 🗂️ Encoder un dossier complet (batch)
 
-```bash
-# 🐧 Linux / 🍎 macOS
-for file in *.mkv; do
-    ./adaptive-encoder "$file"
-done
-```
+> ⚠️ **Le piège à connaître :** la sortie par défaut s'appelle `<entrée>_adaptive.mkv`. Sans précaution, si vous relancez le script, il va re-traiter en boucle les fichiers déjà encodés (`film_adaptive.mkv` → `film_adaptive_adaptive.mkv`, etc.). **Toutes les commandes ci-dessous excluent les fichiers `*_adaptive.mkv`** pour éviter ce problème.
 
+### 🪟 Windows — PowerShell (recommandé)
+
+**1. Placez `adaptive-encoder.exe` dans le dossier qui contient vos vidéos.**
+
+**2. Ouvrez PowerShell dans ce dossier** (`Shift` + clic droit → "Ouvrir la fenêtre PowerShell ici"). Vérifiez le prompt `PS C:\...>`.
+
+**3. Choisissez la commande selon votre besoin :**
+
+**Dossier courant uniquement :**
 ```powershell
-# 🪟 Windows
-Get-ChildItem *.mkv | ForEach-Object {
+Get-ChildItem *.mkv -Exclude *_adaptive.mkv | ForEach-Object {
     .\adaptive-encoder.exe $_.FullName
 }
 ```
 
-> 💡 **Conseil :** lancez d'abord avec `--dry-run` sur un seul fichier pour vérifier que le Dolby Vision et le HDR sont correctement détectés.
+**Récursif — inclure tous les sous-dossiers :**
+```powershell
+Get-ChildItem -Recurse -Include *.mkv -Exclude *_adaptive.mkv | ForEach-Object {
+    .\adaptive-encoder.exe $_.FullName
+}
+```
+
+**Plusieurs formats à la fois (récursif) :**
+```powershell
+Get-ChildItem -Recurse -Include *.mkv,*.mp4,*.mov -Exclude *_adaptive.* | ForEach-Object {
+    .\adaptive-encoder.exe $_.FullName
+}
+```
+
+> 💡 **Si PowerShell refuse de lancer le `.exe`** (politique d'exécution), tapez d'abord :
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+> Ça ne dure que le temps de la session.
+
+### 🪟 Windows — CMD ou fichier .bat
+
+```cmd
+for %F in (*.mkv) do adaptive-encoder.exe "%F"
+```
+
+Dans un fichier `.bat`, doublez les `%` :
+```bat
+@echo off
+for %%F in (*.mkv) do adaptive-encoder.exe "%%F"
+pause
+```
+
+### 🐧 Linux / 🍎 macOS
+
+**Dossier courant uniquement :**
+```bash
+for f in *.mkv; do
+    [[ "$f" == *_adaptive.mkv ]] && continue
+    ./adaptive-encoder "$f"
+done
+```
+
+**Récursif (tous sous-dossiers) :**
+```bash
+find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {} \;
+```
+
+---
+
+> 💡 **Avant de lancer sur toute la bibliothèque,** testez d'abord avec `--dry-run` sur un seul fichier pour vérifier que Dolby Vision, HDR10+ et HDR sont correctement détectés.
+
+> 💡 **Charge/durée :** un encodage en `veryslow` peut prendre plusieurs heures par film. Pour une grosse bibliothèque, lancez ça en soirée ou utilisez `--no-veryslow` pour limiter à `slower`.
 
 ---
 
@@ -298,6 +367,28 @@ Get-ChildItem *.mkv | ForEach-Object {
 --verbose                         Affiche les détails techniques de l'analyse adaptative
 --dry-run                         Affiche l'analyse et la commande sans encoder
 ```
+
+---
+
+## 🛠️ Dépannage
+
+**La commande ne fait rien / "n'est pas reconnu".**
+Vous êtes probablement dans le mauvais dossier, ou `adaptive-encoder.exe` n'est pas dans le dossier courant. Vérifiez avec `pwd` (PowerShell) ou `cd` (CMD) que vous êtes au bon endroit, et avec `ls` / `dir` que le `.exe` est bien là.
+
+**Mes fichiers `_adaptive.mkv` sont re-traités à chaque lancement du batch.**
+Utilisez la version des commandes batch avec `-Exclude *_adaptive.mkv` (PowerShell) ou la boucle bash qui filtre `*_adaptive.mkv` (Linux/macOS). Voir la section "Encoder un dossier complet" ci-dessus.
+
+**PowerShell refuse de lancer le `.exe`.**
+Lancez d'abord `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` dans la fenêtre PowerShell. Ça ne dure que le temps de la session.
+
+**`Get-ChildItem` ne fonctionne pas.**
+Vous êtes dans CMD, pas PowerShell. Le prompt doit commencer par `PS`. Tapez `powershell` puis Entrée pour basculer.
+
+**L'encodage prend des heures par film — c'est normal ?**
+Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez `--no-veryslow` pour basculer sur `slower` (env. 2× plus rapide) ou `--no-veryslow --base-crf 24` pour réduire encore.
+
+**Espace disque saturé pendant l'encodage Dolby Vision.**
+Les fichiers temporaires DV peuvent être lourds. Utilisez `--temp-dir D:\temp` (Windows) ou `--temp-dir /chemin/disque-libre` (Linux/macOS) pour les rediriger vers un disque avec plus d'espace.
 
 ---
 
@@ -485,20 +576,34 @@ After that, macOS will never warn about this file again.
 
 ---
 
-## 🚀 Quick start
+## 🚀 Quick start — single file
 
-```bash
-# 🐧 Linux / 🍎 macOS
-chmod +x ./adaptive-encoder
-./adaptive-encoder "my_movie.mkv"
+### 🪟 Windows — step by step
 
-# 🪟 Windows (PowerShell or CMD)
+**1. Place `adaptive-encoder.exe` in the folder that contains your video.**
+
+**2. Open PowerShell *in that folder*.** Hold `Shift` and right-click in an empty area of the folder → **"Open PowerShell window here"**.
+
+> ✅ Make sure the prompt starts with `PS C:\...>`. If you only see `C:\...>`, you're in CMD. Both work, but the syntax differs (see below).
+
+**3. Run the command:**
+
+```powershell
 .\adaptive-encoder.exe "my_movie.mkv"
 ```
 
-> 💡 **Windows tip:** Shift + right-click in the folder → "Open PowerShell window here"
+The output file will be created next to it, named `my_movie_adaptive.mkv`.
 
-**Test mode — analyze without encoding:**
+### 🐧 Linux / 🍎 macOS
+
+```bash
+chmod +x ./adaptive-encoder
+./adaptive-encoder "my_movie.mkv"
+```
+
+### Useful variants
+
+**Test mode — analyze without encoding (always do this first on a new source type):**
 ```bash
 ./adaptive-encoder "my_movie.mkv" --dry-run
 ```
@@ -525,23 +630,78 @@ chmod +x ./adaptive-encoder
 
 ---
 
-## 🗂️ Batch encode an entire library
+## 🗂️ Batch encode an entire folder
 
-```bash
-# 🐧 Linux / 🍎 macOS
-for file in *.mkv; do
-    ./adaptive-encoder "$file"
-done
-```
+> ⚠️ **Gotcha to know:** the default output is named `<input>_adaptive.mkv`. Without precautions, re-running the script will reprocess already-encoded files in a loop (`film_adaptive.mkv` → `film_adaptive_adaptive.mkv`, etc.). **All commands below exclude `*_adaptive.mkv` files** to avoid this issue.
 
+### 🪟 Windows — PowerShell (recommended)
+
+**1. Place `adaptive-encoder.exe` in the folder containing your videos.**
+
+**2. Open PowerShell in that folder** (`Shift` + right-click → "Open PowerShell window here"). Confirm the `PS C:\...>` prompt.
+
+**3. Pick the command that matches your need:**
+
+**Current folder only:**
 ```powershell
-# 🪟 Windows
-Get-ChildItem *.mkv | ForEach-Object {
+Get-ChildItem *.mkv -Exclude *_adaptive.mkv | ForEach-Object {
     .\adaptive-encoder.exe $_.FullName
 }
 ```
 
-> 💡 **Tip:** run with `--dry-run` on a single file first to verify Dolby Vision and HDR are correctly detected.
+**Recursive — include all subfolders:**
+```powershell
+Get-ChildItem -Recurse -Include *.mkv -Exclude *_adaptive.mkv | ForEach-Object {
+    .\adaptive-encoder.exe $_.FullName
+}
+```
+
+**Multiple formats at once (recursive):**
+```powershell
+Get-ChildItem -Recurse -Include *.mkv,*.mp4,*.mov -Exclude *_adaptive.* | ForEach-Object {
+    .\adaptive-encoder.exe $_.FullName
+}
+```
+
+> 💡 **If PowerShell refuses to launch the `.exe`** (execution policy), first run:
+> ```powershell
+> Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+> ```
+> This only lasts for the current session.
+
+### 🪟 Windows — CMD or .bat file
+
+```cmd
+for %F in (*.mkv) do adaptive-encoder.exe "%F"
+```
+
+In a `.bat` file, double the `%`:
+```bat
+@echo off
+for %%F in (*.mkv) do adaptive-encoder.exe "%%F"
+pause
+```
+
+### 🐧 Linux / 🍎 macOS
+
+**Current folder only:**
+```bash
+for f in *.mkv; do
+    [[ "$f" == *_adaptive.mkv ]] && continue
+    ./adaptive-encoder "$f"
+done
+```
+
+**Recursive (all subfolders):**
+```bash
+find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {} \;
+```
+
+---
+
+> 💡 **Before running on the whole library,** test with `--dry-run` on a single file first to verify Dolby Vision, HDR10+ and HDR are correctly detected.
+
+> 💡 **Load/duration:** a `veryslow` encode can take several hours per film. For a large library, run it overnight or use `--no-veryslow` to cap at `slower`.
 
 ---
 
@@ -636,6 +796,28 @@ Get-ChildItem *.mkv | ForEach-Object {
 --verbose                         Display technical details of adaptive analysis
 --dry-run                         Display analysis and command without encoding
 ```
+
+---
+
+## 🛠️ Troubleshooting
+
+**The command does nothing / "not recognized".**
+You're probably in the wrong folder, or `adaptive-encoder.exe` isn't in the current folder. Check with `pwd` (PowerShell) or `cd` (CMD) that you're in the right place, and with `ls` / `dir` that the `.exe` is actually there.
+
+**My `_adaptive.mkv` files get reprocessed every time I run the batch.**
+Use the batch commands that include `-Exclude *_adaptive.mkv` (PowerShell) or the bash loop that filters `*_adaptive.mkv` (Linux/macOS). See the "Batch encode" section above.
+
+**PowerShell refuses to run the `.exe`.**
+First run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in the PowerShell window. It only lasts for the current session.
+
+**`Get-ChildItem` doesn't work.**
+You're in CMD, not PowerShell. The prompt should start with `PS`. Type `powershell` then Enter to switch.
+
+**Encoding takes hours per film — is that normal?**
+Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` to switch to `slower` (about 2× faster), or `--no-veryslow --base-crf 24` to reduce further.
+
+**Disk space saturated during Dolby Vision encoding.**
+DV temp files can be large. Use `--temp-dir D:\temp` (Windows) or `--temp-dir /path/free-disk` (Linux/macOS) to redirect them to a disk with more space.
 
 ---
 
