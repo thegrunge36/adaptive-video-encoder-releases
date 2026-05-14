@@ -104,7 +104,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎞️ **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte (sauf si normalisation ou downmix actif)
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Résolutions** — 480p à 8K
-- 📦 **Binaire unique** — `ffmpeg`, `ffprobe` et `mkvmerge` intégrés sur les trois plateformes. `dovi_tool` et `hdr10plus_tool` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe` et `hdr10plus_tool.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** pour activer le Dolby Vision et le HDR10+ (voir ci-dessous).
+- 📦 **Binaire unique** — `ffmpeg` et `ffprobe` intégrés sur les trois plateformes. `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** pour activer le Dolby Vision, le HDR10+ et le remuxage MKV (voir ci-dessous).
 
 ---
 
@@ -113,7 +113,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 | Plateforme | Statut | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supporté | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD. **`dovi_tool` et `hdr10plus_tool` à déposer manuellement pour DV et HDR10+** |
+| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD. **`dovi_tool`, `hdr10plus_tool` et `mkvmerge` à déposer manuellement** |
 | 🍎 macOS (Apple Silicon) | ✅ Supporté | M1, M2, M3 — binaire natif arm64 |
 
 ---
@@ -130,16 +130,17 @@ Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du tem
 
 ## ⚙️ Installation et prérequis
 
-`ffmpeg`, `ffprobe` et `mkvmerge` sont intégrés dans le binaire sur toutes les plateformes.
+`ffmpeg` et `ffprobe` sont intégrés dans le binaire sur toutes les plateformes.
 
-> ⚠️ **Windows — `dovi_tool` et `hdr10plus_tool` à déposer manuellement**
+> ⚠️ **Windows — `dovi_tool`, `hdr10plus_tool` et `mkvmerge` à déposer manuellement**
 >
-> Sur Windows, `dovi_tool` et `hdr10plus_tool` ne sont pas fonctionnels dans le binaire. Téléchargez les deux exécutables et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers :
+> Sur Windows, ces trois outils ne sont pas fonctionnels dans le binaire. Téléchargez les exécutables et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers :
 >
 > - **`dovi_tool.exe`** → [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
 > - **`hdr10plus_tool.exe`** → [https://github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases)
+> - **`mkvmerge.exe`** → [https://mkvtoolnix.download](https://mkvtoolnix.download) (inclus dans MKVToolNix — prenez l'installeur ou l'archive portable)
 >
-> Sans ces fichiers, le Dolby Vision et le HDR10+ sont silencieusement ignorés — la sortie tombe en HDR10 uniquement.
+> Sans ces fichiers, le Dolby Vision, le HDR10+ et le remuxage MKV sont silencieusement ignorés ou échouent.
 
 ### Premier lancement — macOS uniquement
 
@@ -385,7 +386,7 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 Vous êtes probablement dans le mauvais dossier, ou `adaptive-encoder.exe` n'est pas dans le dossier courant. Vérifiez avec `pwd` (PowerShell) ou `cd` (CMD) que vous êtes au bon endroit, et avec `ls` / `dir` que le `.exe` est bien là.
 
 **Le Dolby Vision ou le HDR10+ ne fonctionne pas sur Windows.**
-Sur Windows, `dovi_tool` et `hdr10plus_tool` ne sont pas fonctionnels dans le binaire. Téléchargez `dovi_tool.exe` et `hdr10plus_tool.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Sans eux, le DV et le HDR10+ sont silencieusement ignorés et la sortie tombe en HDR10 uniquement.
+Sur Windows, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` ne sont pas fonctionnels dans le binaire. Téléchargez les trois exécutables et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Sans eux, le DV et le HDR10+ sont silencieusement ignorés et la sortie tombe en HDR10 uniquement.
 
 **Mes fichiers `_adaptive.mkv` sont re-traités à chaque lancement du batch.**
 Utilisez la version des commandes batch avec `-Exclude *_adaptive.mkv` (PowerShell) ou la boucle bash qui filtre `*_adaptive.mkv` (Linux/macOS). Voir la section "Encoder un dossier complet" ci-dessus.
@@ -407,16 +408,16 @@ Les fichiers temporaires DV peuvent être lourds. Utilisez `--temp-dir D:\temp` 
 ## ❓ FAQ
 
 **Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). `ffmpeg`, `ffprobe` et `mkvmerge` sont intégrés dans le binaire sur les trois plateformes. `dovi_tool` et `hdr10plus_tool` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe` et `hdr10plus_tool.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** pour activer le DV et le HDR10+ — aucune installation, juste déposer les fichiers.
+Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). `ffmpeg` et `ffprobe` sont intégrés dans le binaire sur les trois plateformes. `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** — aucune installation, juste déposer les fichiers.
 
 **C'est seulement pour la 4K ?**
 Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size`, preset) sont adaptés automatiquement à la résolution effective.
 
 **Dois-je télécharger des outils séparément ?**
-Sur Linux et macOS : non, tout est intégré. Sur Windows : `ffmpeg`, `ffprobe` et `mkvmerge` sont intégrés, mais **pour le Dolby Vision et le HDR10+, téléchargez `dovi_tool.exe` et `hdr10plus_tool.exe`** et placez-les dans le même dossier qu'`adaptive-encoder.exe` — pas d'installation, juste déposer les fichiers.
+Sur Linux et macOS : non, tout est intégré. Sur Windows : `ffmpeg` et `ffprobe` sont intégrés, mais **`dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` doivent être téléchargés et placés dans le même dossier qu'`adaptive-encoder.exe`** — pas d'installation, juste déposer les fichiers.
 
 **Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
-Oui, sous réserve que `dovi_tool` et `hdr10plus_tool` soient disponibles. Sur Linux et macOS, tout est intégré et fonctionne sans configuration. **Sur Windows, téléchargez `dovi_tool.exe` et `hdr10plus_tool.exe`** et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
+Oui, sous réserve que `dovi_tool`, `hdr10plus_tool` et `mkvmerge` soient disponibles. Sur Linux et macOS, tout est intégré et fonctionne sans configuration. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe`** et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
 
 **La conversion Profil 7 → 8.1 fonctionne ?**
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
@@ -547,7 +548,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🎞️ **All audio and subtitle tracks** copied by default, zero loss (unless normalization or downmix active)
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K
-- 📦 **Single binary** — `ffmpeg`, `ffprobe` and `mkvmerge` bundled on all three platforms. `dovi_tool` and `hdr10plus_tool` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe` and `hdr10plus_tool.exe` and place them in the same folder as `adaptive-encoder.exe`** to enable Dolby Vision and HDR10+ (see below).
+- 📦 **Single binary** — `ffmpeg` and `ffprobe` bundled on all three platforms. `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` and place them in the same folder as `adaptive-encoder.exe`** to enable Dolby Vision, HDR10+ and MKV remuxing (see below).
 
 ---
 
@@ -556,7 +557,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 | Platform | Status | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD. **`dovi_tool` and `hdr10plus_tool` must be dropped manually for DV and HDR10+** |
+| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD. **`dovi_tool`, `hdr10plus_tool` and `mkvmerge` must be dropped manually** |
 | 🍎 macOS (Apple Silicon) | ✅ Supported | M1, M2, M3 — native arm64 binary |
 
 ---
@@ -573,16 +574,17 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 
 ## ⚙️ Installation & requirements
 
-`ffmpeg`, `ffprobe` and `mkvmerge` are bundled inside the binary on all platforms.
+`ffmpeg` and `ffprobe` are bundled inside the binary on all platforms.
 
-> ⚠️ **Windows — `dovi_tool` and `hdr10plus_tool` must be dropped manually**
+> ⚠️ **Windows — `dovi_tool`, `hdr10plus_tool` and `mkvmerge` must be dropped manually**
 >
-> On Windows, `dovi_tool` and `hdr10plus_tool` are not functional inside the binary. Download both executables and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files:
+> On Windows, these three tools are not functional inside the binary. Download the executables and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files:
 >
 > - **`dovi_tool.exe`** → [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
 > - **`hdr10plus_tool.exe`** → [https://github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases)
+> - **`mkvmerge.exe`** → [https://mkvtoolnix.download](https://mkvtoolnix.download) (included in MKVToolNix — use the installer or portable archive)
 >
-> Without these files, Dolby Vision and HDR10+ are silently ignored — output falls back to HDR10 only.
+> Without these files, Dolby Vision, HDR10+ and MKV remuxing will silently fail or be skipped.
 
 ### First launch — macOS only
 
@@ -826,7 +828,7 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 You're probably in the wrong folder, or `adaptive-encoder.exe` isn't in the current folder. Check with `pwd` (PowerShell) or `cd` (CMD) that you're in the right place, and with `ls` / `dir` that the `.exe` is actually there.
 
 **Dolby Vision or HDR10+ doesn't work on Windows.**
-On Windows, `dovi_tool` and `hdr10plus_tool` are not functional inside the binary. Download `dovi_tool.exe` and `hdr10plus_tool.exe` and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. Without them, DV and HDR10+ are silently ignored and the output falls back to HDR10 only.
+On Windows, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are not functional inside the binary. Download all three executables and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. Without them, DV and HDR10+ are silently ignored and the output falls back to HDR10 only.
 
 **My `_adaptive.mkv` files get reprocessed every time I run the batch.**
 Use the batch commands that include `-Exclude *_adaptive.mkv` (PowerShell) or the bash loop that filters `*_adaptive.mkv` (Linux/macOS). See the "Batch encode" section above.
@@ -848,16 +850,16 @@ DV temp files can be large. Use `--temp-dir D:\temp` (Windows) or `--temp-dir /p
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). `ffmpeg`, `ffprobe` and `mkvmerge` are bundled on all three platforms. `dovi_tool` and `hdr10plus_tool` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe` and `hdr10plus_tool.exe` and place them in the same folder as `adaptive-encoder.exe`** to enable DV and HDR10+ — no installation, just drop the files.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). `ffmpeg` and `ffprobe` are bundled on all three platforms. `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` and place them in the same folder as `adaptive-encoder.exe`** — no installation, just drop the files.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, preset) are automatically tuned to the effective resolution.
 
 **Do I need to download any tools separately?**
-On Linux and macOS: no, everything is bundled. On Windows: `ffmpeg`, `ffprobe` and `mkvmerge` are bundled, but **for Dolby Vision and HDR10+, download `dovi_tool.exe` and `hdr10plus_tool.exe`** and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files.
+On Linux and macOS: no, everything is bundled. On Windows: `ffmpeg` and `ffprobe` are bundled, but **`dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` must be downloaded and placed in the same folder as `adaptive-encoder.exe`** — no installation, just drop the files.
 
 **Do Dolby Vision and HDR10+ work automatically?**
-Yes, provided `dovi_tool` and `hdr10plus_tool` are available. On Linux and macOS, everything is bundled and works with no setup. **On Windows, download `dovi_tool.exe` and `hdr10plus_tool.exe`** and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
+Yes, provided `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are available. On Linux and macOS, everything is bundled and works with no setup. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe`** and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
 
 **Does Profile 7 → 8.1 conversion work?**
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
