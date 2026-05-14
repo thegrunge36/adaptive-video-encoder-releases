@@ -104,7 +104,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎞️ **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte (sauf si normalisation ou downmix actif)
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Résolutions** — 480p à 8K
-- 📦 **Binaire unique, zéro dépendance** — `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` intégrés sur les trois plateformes. Aucun outil externe à installer.
+- 📦 **Binaire unique, zéro dépendance** — `ffmpeg`, `ffprobe`, `hdr10plus_tool` et `mkvmerge` intégrés sur les trois plateformes. `dovi_tool` est également intégré sur Linux et macOS. **Sur Windows, `dovi_tool` doit être installé séparément pour que le Dolby Vision fonctionne** (voir ci-dessous).
 
 ---
 
@@ -113,7 +113,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 | Plateforme | Statut | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supporté | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD |
+| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD. **`dovi_tool` requis séparément pour le Dolby Vision** |
 | 🍎 macOS (Apple Silicon) | ✅ Supporté | M1, M2, M3 — binaire natif arm64 |
 
 ---
@@ -130,7 +130,15 @@ Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du tem
 
 ## ⚙️ Installation et prérequis
 
-Tous les outils nécessaires (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) sont intégrés dans le binaire — **aucune installation externe requise** sur Windows, Linux ou macOS.
+La plupart des outils nécessaires (`ffmpeg`, `ffprobe`, `hdr10plus_tool`, `mkvmerge`) sont intégrés dans le binaire sur toutes les plateformes.
+
+> ⚠️ **Windows — `dovi_tool` requis séparément pour le Dolby Vision**
+>
+> Sur Windows, le binaire intégré de `dovi_tool` ne fonctionne pas correctement. Si vous encodez des sources Dolby Vision sur Windows, vous devez **installer `dovi_tool` séparément** et vous assurer qu'il est accessible dans votre `PATH` (ou placé dans le même dossier que `adaptive-encoder.exe`).
+>
+> Téléchargez `dovi_tool` depuis : [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
+>
+> Si vous n'avez pas de sources Dolby Vision, cette étape n'est pas nécessaire.
 
 ### Premier lancement — macOS uniquement
 
@@ -375,6 +383,9 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 **La commande ne fait rien / "n'est pas reconnu".**
 Vous êtes probablement dans le mauvais dossier, ou `adaptive-encoder.exe` n'est pas dans le dossier courant. Vérifiez avec `pwd` (PowerShell) ou `cd` (CMD) que vous êtes au bon endroit, et avec `ls` / `dir` que le `.exe` est bien là.
 
+**Le Dolby Vision ne fonctionne pas sur Windows.**
+Sur Windows, `dovi_tool` doit être installé séparément — le binaire intégré ne fonctionne pas sous Windows pour le traitement DV. Téléchargez `dovi_tool` depuis [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) et placez-le dans le même dossier que `adaptive-encoder.exe` ou ajoutez-le à votre `PATH`. Sans `dovi_tool` accessible, l'encodage Dolby Vision échouera silencieusement ou sera ignoré.
+
 **Mes fichiers `_adaptive.mkv` sont re-traités à chaque lancement du batch.**
 Utilisez la version des commandes batch avec `-Exclude *_adaptive.mkv` (PowerShell) ou la boucle bash qui filtre `*_adaptive.mkv` (Linux/macOS). Voir la section "Encoder un dossier complet" ci-dessus.
 
@@ -395,16 +406,16 @@ Les fichiers temporaires DV peuvent être lourds. Utilisez `--temp-dir D:\temp` 
 ## ❓ FAQ
 
 **Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). Tous les outils nécessaires (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) sont intégrés dans le binaire — aucune installation externe requise.
+Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). La plupart des outils nécessaires (`ffmpeg`, `ffprobe`, `hdr10plus_tool`, `mkvmerge`) sont intégrés dans le binaire. **Exception Windows : `dovi_tool` doit être installé séparément sur Windows pour que le Dolby Vision fonctionne.** Téléchargez-le sur [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases).
 
 **C'est seulement pour la 4K ?**
 Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size`, preset) sont adaptés automatiquement à la résolution effective.
 
 **Dois-je installer ffmpeg ou d'autres outils séparément ?**
-Non. `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont tous intégrés dans le binaire sur les trois plateformes. Téléchargez et lancez, c'est tout.
+Sur Linux et macOS : non, tout est intégré. Sur Windows : `ffmpeg`, `ffprobe`, `hdr10plus_tool` et `mkvmerge` sont intégrés, mais **`dovi_tool` doit être installé séparément si vous avez des sources Dolby Vision**. Sans lui, le DV ne sera pas traité correctement sur Windows.
 
 **Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
-Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées sans configuration. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
+Oui, sous réserve que `dovi_tool` soit disponible. Sur Linux et macOS, tout est intégré et fonctionne sans configuration. **Sur Windows, il faut installer `dovi_tool` séparément** pour que les sources Dolby Vision soient traitées. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
 
 **La conversion Profil 7 → 8.1 fonctionne ?**
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
@@ -535,7 +546,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🎞️ **All audio and subtitle tracks** copied by default, zero loss (unless normalization or downmix active)
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K
-- 📦 **Single binary, zero dependencies** — `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` bundled on all three platforms. Nothing to install separately.
+- 📦 **Single binary, zero dependencies** — `ffmpeg`, `ffprobe`, `hdr10plus_tool` and `mkvmerge` bundled on all three platforms. `dovi_tool` is also bundled on Linux and macOS. **On Windows, `dovi_tool` must be installed separately for Dolby Vision to work** (see below).
 
 ---
 
@@ -544,7 +555,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 | Platform | Status | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD |
+| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD. **`dovi_tool` required separately for Dolby Vision** |
 | 🍎 macOS (Apple Silicon) | ✅ Supported | M1, M2, M3 — native arm64 binary |
 
 ---
@@ -561,7 +572,15 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 
 ## ⚙️ Installation & requirements
 
-All required tools (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) are bundled inside the binary — **no external installation required** on Windows, Linux, or macOS.
+Most required tools (`ffmpeg`, `ffprobe`, `hdr10plus_tool`, `mkvmerge`) are bundled inside the binary on all platforms.
+
+> ⚠️ **Windows — `dovi_tool` required separately for Dolby Vision**
+>
+> On Windows, the bundled `dovi_tool` binary does not work correctly. If you encode Dolby Vision sources on Windows, you must **install `dovi_tool` separately** and make sure it is accessible in your `PATH` (or placed in the same folder as `adaptive-encoder.exe`).
+>
+> Download `dovi_tool` from: [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
+>
+> If you have no Dolby Vision sources, this step is not needed.
 
 ### First launch — macOS only
 
@@ -804,6 +823,9 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 **The command does nothing / "not recognized".**
 You're probably in the wrong folder, or `adaptive-encoder.exe` isn't in the current folder. Check with `pwd` (PowerShell) or `cd` (CMD) that you're in the right place, and with `ls` / `dir` that the `.exe` is actually there.
 
+**Dolby Vision doesn't work on Windows.**
+On Windows, `dovi_tool` must be installed separately — the bundled binary does not work on Windows for DV processing. Download `dovi_tool` from [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases) and place it in the same folder as `adaptive-encoder.exe` or add it to your `PATH`. Without an accessible `dovi_tool`, Dolby Vision encoding will silently fail or be skipped.
+
 **My `_adaptive.mkv` files get reprocessed every time I run the batch.**
 Use the batch commands that include `-Exclude *_adaptive.mkv` (PowerShell) or the bash loop that filters `*_adaptive.mkv` (Linux/macOS). See the "Batch encode" section above.
 
@@ -824,16 +846,16 @@ DV temp files can be large. Use `--temp-dir D:\temp` (Windows) or `--temp-dir /p
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). All required tools (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) are bundled inside the binary — no external installation required.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). Most required tools (`ffmpeg`, `ffprobe`, `hdr10plus_tool`, `mkvmerge`) are bundled inside the binary. **Windows exception: `dovi_tool` must be installed separately on Windows for Dolby Vision to work.** Download it from [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases).
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, preset) are automatically tuned to the effective resolution.
 
 **Do I need to install ffmpeg or any other tools separately?**
-No. `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are all bundled inside the binary on all three platforms. Download and run — that's it.
+On Linux and macOS: no, everything is bundled. On Windows: `ffmpeg`, `ffprobe`, `hdr10plus_tool` and `mkvmerge` are bundled, but **`dovi_tool` must be installed separately if you have Dolby Vision sources**. Without it, DV will not be processed correctly on Windows.
 
 **Do Dolby Vision and HDR10+ work automatically?**
-Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
+Yes, provided `dovi_tool` is available. On Linux and macOS, everything is bundled and works with no setup. **On Windows, `dovi_tool` must be installed separately** for Dolby Vision sources to be processed. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
 
 **Does Profile 7 → 8.1 conversion work?**
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
