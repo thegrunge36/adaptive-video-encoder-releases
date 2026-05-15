@@ -417,32 +417,78 @@ Cette section regroupe des exemples concrets, organisés par catégorie de flag.
 
 ### 🎚️ Débit & préréglages
 
-**Activer le plafonnement adaptatif VBV** — `--vbv` calibre automatiquement le débit max selon la résolution (7 Mbps en 720p, 12 Mbps en 1080p, 17 Mbps en 1440p, 28 Mbps en 4K) :
+> ℹ️ **Comportement par défaut :** sans aucun flag de débit, l'encodeur fonctionne en **CRF pur** (pas de plafond de débit). La taille finale dépend uniquement de la complexité du contenu et de `--base-crf` (défaut : 22.0). Activer `--vbv` ou `--max-bitrate` impose un plafond.
+
+#### Échelle CRF rapide
+
+Le CRF est une échelle de qualité inversée (plus bas = mieux). Effet typique sur la taille finale d'un Blu-ray remux 1080p ré-encodé :
+
+| `--base-crf` | Effet | Cas d'usage typique |
+|---|---|---|
+| 18 | Quasi-transparent, fichier très lourd | Archivage maximal, masters |
+| 20 | Excellent, légèrement plus léger | Archivage qualité, **proche-remux** |
+| 22 (défaut) | Bon compromis qualité/taille | Usage général |
+| 24 | Visible sur scènes complexes | Réduction de taille, streaming perso |
+| 26+ | Artefacts visibles | À éviter sauf contrainte espace |
+
+Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
+
+```bash
+# Qualité plus haute (fichier plus lourd, plus proche du remux)
+./adaptive-encoder "film.mkv" --base-crf 20.0
+
+# Compromis (défaut implicite)
+./adaptive-encoder "film.mkv" --base-crf 22.0
+
+# Taille plus petite (qualité légèrement dégradée, utile pour la diffusion perso)
+./adaptive-encoder "film.mkv" --base-crf 24.0
+```
+
+> ⚠️ Le CRF base est **ajusté image par image** par l'analyse adaptative. Les scènes simples reçoivent un CRF plus élevé (économies de bits), les scènes complexes un CRF plus bas (préservation du détail). `--base-crf` décale toute la courbe.
+
+#### Plafonner le débit avec VBV
+
+**`--vbv` — Plafond adaptatif automatique** : calibre le débit max selon la résolution effective post-crop (~7 Mbps en 720p, ~12 Mbps en 1080p, ~17 Mbps en 1440p, ~28 Mbps en 4K, capé à 35 Mbps). Recommandé si vous voulez un plafond raisonnable sans réfléchir :
+
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
 ```
 
-**Imposer un plafond manuel** — pour cibler une taille de fichier précise, par exemple 10 Mbps :
+**`--max-bitrate` — Plafond manuel en kbps** : impose une valeur précise, **override le calcul auto de `--vbv`**. Utile pour cibler une taille de fichier précise :
+
 ```bash
+# Plafond manuel à 10 Mbps
 ./adaptive-encoder "film.mkv" --max-bitrate 10000
+
+# Plafond à 20 Mbps pour du 4K
+./adaptive-encoder "film_4k.mkv" --max-bitrate 20000
 ```
 
-**Plafond manuel + buffer VBV ajusté** — sur du contenu très variable, élargir le buffer évite les pompages de débit :
+> ℹ️ **Interaction `--vbv` / `--max-bitrate` :** si vous passez `--max-bitrate`, sa valeur prime et le calcul automatique de `--vbv` est ignoré. Il n'est donc pas utile de combiner les deux flags.
+
+**`--vbv-bufsize` — Taille du buffer VBV en kbits** : par défaut, le buffer = 2× max bitrate. Élargir le buffer permet des pics plus longs (lisse les pompages sur contenu très variable) :
+
 ```bash
+# Buffer 2× du plafond — comportement par défaut, donné pour référence
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
+
+# Buffer 3× — pour scènes très variables (sports, action rapide, feux d'artifice)
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
 ```
 
-**Encodage plus rapide** — bascule sur `slower` au lieu de `veryslow` (env. 2× plus rapide, qualité ~1-2 % en dessous) :
+#### Préréglages d'encodage
+
+**Encodage plus rapide** — bascule sur `slower` au lieu de `veryslow` (env. 2× plus rapide, qualité ~1-2 % en dessous, recommandé pour les gros lots) :
 ```bash
 ./adaptive-encoder "film.mkv" --no-veryslow
 ```
 
-**Tune `grain` forcé** — pour les pellicules 35mm/16mm scannées où vous voulez garder la structure du grain :
+**Tune `grain` forcé** — préserve la structure du grain (psy-rd plus élevé, deblock désactivé). Pour pellicules 35mm/16mm scannées :
 ```bash
 ./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
 ```
 
-**Tune `animation` forcé** — pour les dessins animés, anime, motion design (zones plates, bords nets) :
+**Tune `animation` forcé** — optimise pour les zones plates et les bords nets. Pour dessins animés, anime, motion design :
 ```bash
 ./adaptive-encoder "anime.mkv" --force-tune animation
 ```
@@ -511,48 +557,114 @@ Cette section regroupe des exemples concrets, organisés par catégorie de flag.
 
 ### 🔊 Audio & sous-titres
 
-**Supprimer toutes les pistes audio** — pour produire un master vidéo seul :
+> ℹ️ **Comportement par défaut :** sans aucun flag audio, **toutes les pistes audio sont copiées bit-perfect** (stream copy) — aucun ré-encodage, aucune perte. Toutes les pistes de sous-titres aussi. Activer `--normalize-audio` ou `--downmix-audio` force le ré-encodage en AC3 et fait perdre la copie bit-perfect.
+
+**Supprimer toutes les pistes audio** — produit un master vidéo seul, utile avant un remux audio externe ou pour archiver une « image clean » :
 ```bash
 ./adaptive-encoder "film.mkv" --no-audio
 ```
 
-**Supprimer tous les sous-titres** :
+**Supprimer tous les sous-titres** — retire toutes les pistes SRT / PGS / ASS / VobSub de la sortie :
 ```bash
 ./adaptive-encoder "film.mkv" --no-subs
 ```
 
-**Garder uniquement le français et l'anglais** — supprime les autres doublages, première langue listée = défaut du player :
+#### Filtrer les pistes audio par langue
+
+`--audio-lang` ne garde que les langues listées (codes ISO 639-2/B : `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **La première langue listée devient la piste par défaut du player.** Les pistes audio non listées sont supprimées. Les sous-titres ne sont **pas** filtrés par ce flag — utilisez `--no-subs` si vous voulez tout retirer.
+
 ```bash
+# VO anglaise + VF, anglais en piste par défaut
+./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
+
+# Même film, mais français en piste par défaut
 ./adaptive-encoder "film.mkv" --audio-lang "fre,eng"
-```
 
-**Garder uniquement la VO anglaise (suppression des doublages)** :
-```bash
+# Uniquement la VO anglaise (toutes les autres pistes supprimées)
 ./adaptive-encoder "film.mkv" --audio-lang "eng"
+
+# Anime : japonais en piste par défaut, anglais et français en secours
+./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
 ```
 
-**Downmix 7.1/Atmos → 5.1 ou 2.0** — pour les setups home cinéma plus simples ou pour économiser de l'espace :
+#### Downmixer les pistes multicanal lourdes
+
+`--downmix-audio` choisit automatiquement la cible selon le nombre de canaux source. **Le ré-encodage est obligatoire** (impossible de stream-copier un downmix). Le codec utilisé est **AC3** (Dolby Digital, compatibilité maximale).
+
+| Source détectée | Cible de sortie | Débit AC3 |
+|---|---|---|
+| Atmos / TrueHD Atmos / DTS:X | 5.1 | 640 kbps |
+| 7.1 (8 canaux) | 5.1 | 640 kbps |
+| 5.1 (6 canaux) | 5.1 (ré-encodé) | 640 kbps |
+| Stéréo / mono | inchangé | 192 kbps |
+
 ```bash
+# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
 ```
 
-**Normalisation audio rapide (single-pass)** :
-```bash
-./adaptive-encoder "film.mkv" --normalize-audio single-pass
-```
+> ⚠️ **Pour répondre à la question « comment obtenir spécifiquement 5.1 AC3 à 640 kbps ? » :** c'est exactement ce que produit `--downmix-audio` sur une source 7.1 ou Atmos. Le 640 kbps n'est pas configurable en CLI — c'est la valeur fixe utilisée par l'outil pour le 5.1 (et 192 kbps pour la stéréo). Si vous avez besoin d'un autre débit (ex. 448 kbps), d'un autre codec (EAC3, AAC, Opus), ou de forcer la sortie en stéréo (le flag `--downmix-audio` cible toujours le 5.1 sur source 7.1+), c'est à faire en post-traitement avec ffmpeg.
 
-**Normalisation audio précise (two-pass) — recommandé** :
+#### Normalisation EBU R128 (loudness)
+
+`--normalize-audio` applique une normalisation de loudness aux pistes audio conservées. **Active obligatoirement le ré-encodage** en AC3 → vous perdez l'audio bit-perfect d'origine (mêmes débits que `--downmix-audio` : 640 kbps pour 5.1, 192 kbps pour stéréo).
+
+Deux modes :
+
 ```bash
+# Single-pass — rapide (1 passe ffmpeg), normalisation dynamique
+# Légèrement moins précise sur les variations de loudness scène par scène
+./adaptive-encoder "film.mkv" --normalize-audio single-pass
+
+# Two-pass — recommandé : passe de mesure puis correction linéaire
+# Plus lent (mesure ~= durée du film en plus), mais précis
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass
 ```
 
-**Cible LUFS personnalisée** :
+**Cible LUFS personnalisée** — défaut `-16 LUFS` (TV / streaming). Quelques cibles courantes :
+
 ```bash
-# Broadcast EBU R128 strict
+# Broadcast EBU R128 strict (TV européenne : BBC, ARTE, France 2, etc.)
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
 
-# Streaming type Spotify/YouTube (-14 LUFS)
+# ATSC A/85 (broadcast US)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -24.0
+
+# Streaming type Spotify / YouTube
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
+
+# Apple Music / Apple TV (équivalent au défaut)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -16.0
+```
+
+#### Combinaisons audio courantes
+
+**Downmix + normalisation (home cinéma 5.1 cohérent)** — sortie 5.1 AC3 640 kbps avec loudness alignée. La combinaison la plus utilisée pour une bibliothèque destinée à un AV receiver 5.1 :
+
+```bash
+./adaptive-encoder "film_atmos.mkv" --downmix-audio --normalize-audio two-pass
+```
+
+**Bibliothèque 5.1 broadcast EBU R128 complète** — filtre langues + downmix + normalisation -23 LUFS :
+
+```bash
+./adaptive-encoder "film_atmos.mkv" \
+  --audio-lang "fre,eng" \
+  --downmix-audio \
+  --normalize-audio two-pass \
+  --normalize-audio-target -23.0
+```
+
+**Préservation maximale audio** — toutes les pistes copiées bit-perfect, aucune transformation (comportement par défaut, donné ici pour référence) :
+
+```bash
+./adaptive-encoder "film.mkv"
+```
+
+**Filtrer langues mais préserver le bit-perfect** — supprime les doublages indésirables tout en gardant les pistes conservées en copie pure :
+
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
 ```
 
 ### 🖥️ Système
@@ -1137,32 +1249,78 @@ This section gathers concrete examples, organized by flag category. Examples use
 
 ### 🎚️ Bitrate & presets
 
-**Enable adaptive VBV cap** — `--vbv` automatically calibrates max bitrate to resolution (7 Mbps at 720p, 12 Mbps at 1080p, 17 Mbps at 1440p, 28 Mbps at 4K):
+> ℹ️ **Default behavior:** without any bitrate flag, the encoder runs in **pure CRF mode** (no bitrate cap). Final size depends only on content complexity and `--base-crf` (default: 22.0). Enabling `--vbv` or `--max-bitrate` imposes a cap.
+
+#### Quick CRF scale
+
+CRF is an inverted quality scale (lower = better). Typical effect on the final size of a re-encoded 1080p Blu-ray remux:
+
+| `--base-crf` | Effect | Typical use case |
+|---|---|---|
+| 18 | Near-transparent, very large file | Maximum archival, masters |
+| 20 | Excellent, slightly lighter | Quality archival, **near-remux** |
+| 22 (default) | Good quality/size tradeoff | General use |
+| 24 | Visible on complex scenes | Size reduction, personal streaming |
+| 26+ | Visible artifacts | Avoid unless space-constrained |
+
+Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
+
+```bash
+# Higher quality (larger file, closer to remux)
+./adaptive-encoder "film.mkv" --base-crf 20.0
+
+# Tradeoff (implicit default)
+./adaptive-encoder "film.mkv" --base-crf 22.0
+
+# Smaller size (slightly degraded quality, useful for personal streaming)
+./adaptive-encoder "film.mkv" --base-crf 24.0
+```
+
+> ⚠️ The base CRF is **adjusted frame-by-frame** by the adaptive analysis. Simple scenes get a higher CRF (bit savings), complex scenes a lower CRF (detail preservation). `--base-crf` shifts the whole curve.
+
+#### Cap the bitrate with VBV
+
+**`--vbv` — Automatic adaptive cap**: calibrates max bitrate to the effective post-crop resolution (~7 Mbps at 720p, ~12 Mbps at 1080p, ~17 Mbps at 1440p, ~28 Mbps at 4K, capped at 35 Mbps). Recommended if you want a reasonable cap without thinking:
+
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
 ```
 
-**Force a manual cap** — to target a specific file size, e.g. 10 Mbps:
+**`--max-bitrate` — Manual cap in kbps**: forces a precise value, **overrides the auto-calc of `--vbv`**. Useful for targeting a specific file size:
+
 ```bash
+# Manual cap at 10 Mbps
 ./adaptive-encoder "film.mkv" --max-bitrate 10000
+
+# 20 Mbps cap for 4K
+./adaptive-encoder "film_4k.mkv" --max-bitrate 20000
 ```
 
-**Manual cap + custom VBV buffer** — on highly variable content, a larger buffer prevents bitrate pumping:
+> ℹ️ **`--vbv` / `--max-bitrate` interaction:** if you pass `--max-bitrate`, its value wins and `--vbv`'s automatic calc is ignored. Combining both flags isn't useful.
+
+**`--vbv-bufsize` — VBV buffer size in kbits**: by default, buffer = 2× max bitrate. A larger buffer allows longer peaks (smooths bitrate pumping on highly variable content):
+
 ```bash
+# Buffer 2× cap — default behavior, shown for reference
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
+
+# Buffer 3× — for highly variable scenes (sports, fast action, fireworks)
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
 ```
 
-**Faster encoding** — switches to `slower` instead of `veryslow` (about 2× faster, quality ~1-2% below):
+#### Encoding presets
+
+**Faster encoding** — switches to `slower` instead of `veryslow` (about 2× faster, quality ~1-2% below, recommended for large batches):
 ```bash
 ./adaptive-encoder "film.mkv" --no-veryslow
 ```
 
-**Force `grain` tune** — for scanned 35mm/16mm film where you want to keep the grain structure:
+**Force `grain` tune** — preserves grain structure (higher psy-rd, deblock disabled). For scanned 35mm/16mm film:
 ```bash
 ./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
 ```
 
-**Force `animation` tune** — for cartoons, anime, motion design (flat areas, sharp edges):
+**Force `animation` tune** — optimizes for flat areas and sharp edges. For cartoons, anime, motion design:
 ```bash
 ./adaptive-encoder "anime.mkv" --force-tune animation
 ```
@@ -1231,48 +1389,114 @@ This section gathers concrete examples, organized by flag category. Examples use
 
 ### 🔊 Audio & subtitles
 
-**Strip all audio tracks** — to produce a video-only master:
+> ℹ️ **Default behavior:** without any audio flag, **all audio tracks are stream-copied bit-perfect** — no re-encoding, no loss. All subtitle tracks too. Enabling `--normalize-audio` or `--downmix-audio` forces re-encoding to AC3 and loses bit-perfect copy.
+
+**Strip all audio tracks** — produces a video-only master, useful before an external audio remux or to archive a "clean image":
 ```bash
 ./adaptive-encoder "film.mkv" --no-audio
 ```
 
-**Strip all subtitle tracks:**
+**Strip all subtitle tracks** — removes all SRT / PGS / ASS / VobSub tracks from the output:
 ```bash
 ./adaptive-encoder "film.mkv" --no-subs
 ```
 
-**Keep only English and French** — removes other dubs, first language listed = player default:
+#### Filter audio tracks by language
+
+`--audio-lang` keeps only the listed languages (ISO 639-2/B codes: `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **The first language listed becomes the player's default track.** Audio tracks not listed are removed. Subtitles are **not** filtered by this flag — use `--no-subs` if you want all of them removed.
+
 ```bash
+# English VO + French dub, English as default track
 ./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-```
 
-**Keep only the original English VO (drop dubs):**
-```bash
+# Same film, French as default
+./adaptive-encoder "film.mkv" --audio-lang "fre,eng"
+
+# Original English VO only (all other tracks stripped)
 ./adaptive-encoder "film.mkv" --audio-lang "eng"
+
+# Anime: Japanese as default, English and French as fallback
+./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
 ```
 
-**Downmix 7.1/Atmos → 5.1 or 2.0** — for simpler home theater setups or space savings:
+#### Downmix heavy multichannel tracks
+
+`--downmix-audio` automatically picks the target based on the source channel count. **Re-encoding is mandatory** (you cannot stream-copy a downmix). The codec used is **AC3** (Dolby Digital, maximum compatibility).
+
+| Source detected | Output target | AC3 bitrate |
+|---|---|---|
+| Atmos / TrueHD Atmos / DTS:X | 5.1 | 640 kbps |
+| 7.1 (8 channels) | 5.1 | 640 kbps |
+| 5.1 (6 channels) | 5.1 (re-encoded) | 640 kbps |
+| Stereo / mono | unchanged | 192 kbps |
+
 ```bash
+# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
 ```
 
-**Fast audio normalization (single-pass):**
-```bash
-./adaptive-encoder "film.mkv" --normalize-audio single-pass
-```
+> ⚠️ **To answer "how do I get specifically 5.1 AC3 at 640 kbps?":** that's exactly what `--downmix-audio` produces on a 7.1 or Atmos source. 640 kbps isn't configurable on the CLI — it's the fixed value the tool uses for 5.1 (and 192 kbps for stereo). If you need a different bitrate (e.g. 448 kbps), a different codec (EAC3, AAC, Opus), or want to force stereo output (the `--downmix-audio` flag always targets 5.1 from 7.1+ sources), do it as a post-processing step with ffmpeg.
 
-**Precise audio normalization (two-pass) — recommended:**
+#### EBU R128 normalization (loudness)
+
+`--normalize-audio` applies loudness normalization to all kept audio tracks. **It mandatorily enables re-encoding** to AC3 → you lose bit-perfect original audio (same bitrates as `--downmix-audio`: 640 kbps for 5.1, 192 kbps for stereo).
+
+Two modes:
+
 ```bash
+# Single-pass — fast (1 ffmpeg pass), dynamic normalization
+# Slightly less accurate on scene-by-scene loudness variations
+./adaptive-encoder "film.mkv" --normalize-audio single-pass
+
+# Two-pass — recommended: measure pass then linear correction
+# Slower (measurement ~= film duration extra), but precise
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass
 ```
 
-**Custom LUFS target:**
+**Custom LUFS target** — default `-16 LUFS` (TV / streaming). Common targets:
+
 ```bash
-# Strict EBU R128 broadcast
+# Strict EBU R128 broadcast (European TV: BBC, ARTE, France 2, etc.)
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
 
-# Spotify/YouTube-style streaming (-14 LUFS)
+# ATSC A/85 (US broadcast)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -24.0
+
+# Spotify / YouTube-style streaming
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
+
+# Apple Music / Apple TV (equivalent to the default)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -16.0
+```
+
+#### Common audio combinations
+
+**Downmix + normalization (consistent 5.1 home theater)** — 5.1 AC3 640 kbps output with aligned loudness. The most common combination for a library targeting a 5.1 AV receiver:
+
+```bash
+./adaptive-encoder "film_atmos.mkv" --downmix-audio --normalize-audio two-pass
+```
+
+**Full 5.1 EBU R128 broadcast library** — language filter + downmix + -23 LUFS normalization:
+
+```bash
+./adaptive-encoder "film_atmos.mkv" \
+  --audio-lang "eng,fre" \
+  --downmix-audio \
+  --normalize-audio two-pass \
+  --normalize-audio-target -23.0
+```
+
+**Maximum audio preservation** — all tracks stream-copied bit-perfect, no transformation (default behavior, shown here for reference):
+
+```bash
+./adaptive-encoder "film.mkv"
+```
+
+**Filter languages but preserve bit-perfect** — strip unwanted dubs while keeping kept tracks in pure copy:
+
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
 ```
 
 ### 🖥️ System
