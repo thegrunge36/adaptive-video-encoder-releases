@@ -98,7 +98,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites via `dovi_tool`, préservées, réinjectées. Profil 7 converti en 8.1 par défaut (compatible avec la majorité des lecteurs DV). Option `--preserve-dv-profile` pour sortir en HDR10 plutôt qu'accepter la conversion.
 - 🌟 **HDR10+ (SMPTE 2094-40)** — métadonnées dynamiques auto-détectées via `hdr10plus_tool`, extraites en JSON puis réinjectées dans le bitstream HEVC via le paramètre x265 `dhdr10-info`. DV et HDR10+ coexistent dans le même bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40.
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
-- 🌑 **Débruitage adaptatif** — force calibrée automatiquement à partir du bruit/grain mesurés ; si le score combiné est sous le seuil (~0.08), aucun filtre n'est appliqué. Quatre choix de moteur : `auto` (défaut — sélection intelligente selon le ratio bruit/grain et la force), `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans). Option `--denoise-preserve-grain` pour ne lisser qu'une fraction de la texture.
+- 🌑 **Débruitage adaptatif** — force calibrée automatiquement à partir du bruit/grain mesurés ; si le score combiné est sous le seuil (~0.08), aucun filtre n'est appliqué. Trois moteurs : `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans), plus `auto`. Option `--denoise-preserve-grain` pour ne lisser qu'une fraction de la texture.
 - 🔊 **Normalisation audio EBU R128** — mode `single-pass` (loudnorm dynamique) ou `two-pass` (mesure puis correction linéaire — recommandé). Cible LUFS configurable.
 - ✂️ **Recadrage intelligent** — détecte les bandes noires sans couper accidentellement le contenu
 - 🎞️ **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte (sauf si normalisation ou downmix actif)
@@ -347,25 +347,15 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
                                   est très propre (score combiné < 0.08), aucun filtre
                                   n'est appliqué de toute façon.
 --denoise-strength STRENGTH       Force la force du débruitage (0.0=off, 1.0=max).
-                                  Override le calibrage automatique. Toute valeur > 0
-                                  est toujours honorée, peu importe la propreté de la
-                                  source.
+                                  Override le calibrage automatique.
 --denoise-preserve-grain          Débruitage 40% plus doux qui préserve une partie de la
                                   texture du grain.
 --denoise-engine {auto,nlmeans,bm3d,hybrid}
-                                  Choisit le moteur de débruitage. Défaut : 'auto' —
-                                  sélection intelligente selon le ratio bruit/grain
-                                  et la force calculée :
-                                    • bm3d quand le bruit stationnaire domine (ratio
-                                      bruit/grain > 1.3) — typique des sources numériques
-                                    • hybrid (hqdn3d + nlmeans) quand le grain domine
-                                      (ratio < 0.77) — typique du film 35mm
-                                    • nlmeans dans les cas équilibrés ou à faible force
-                                  Forcer une valeur explicite (nlmeans / bm3d / hybrid)
-                                  désactive la sélection auto et la garantit appliquée.
-                                  Si l'engine demandé est absent de ffmpeg, fallback vers
-                                  un engine disponible avec avertissement visible (jamais
-                                  d'échec silencieux).
+                                  Force un moteur de débruitage spécifique au lieu de la
+                                  sélection automatique. 'nlmeans' rapide et général.
+                                  'bm3d' qualité maximale sur bruit stationnaire (3-5×
+                                  plus lent). 'hybrid' chaîne hqdn3d + nlmeans pour les
+                                  sources mixtes. 'auto' choisit selon le profil bruit/grain.
 
 [ Audio & Sous-titres ]
 --no-audio                        Supprime les pistes audio (copiées par défaut)
@@ -541,29 +531,14 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 ### 🌑 Réduction du bruit
 
-> ℹ️ **Comportement par défaut :** sans aucun flag denoise, l'engine est `auto` et la force est calibrée automatiquement à partir du bruit et du grain mesurés. Si la source est très propre (score combiné < 0.08), **aucun filtre n'est appliqué** — vous récupérez votre fichier sans traitement. Sur une source bruitée ou granuleuse, l'auto choisit l'engine et la force adaptés.
-
-**Mode auto par défaut (aucun flag denoise)** — comportement implicite, l'outil décide tout. `auto` sélectionne intelligemment :
-
-| Profil bruit/grain détecté | Engine choisi | Pourquoi |
-|---|---|---|
-| Bruit stationnaire dominant (ratio bruit/grain > 1.3) | **bm3d** | Idéal sur bruit capteur / numérique propre |
-| Grain dominant (ratio < 0.77) | **hybrid** (hqdn3d + nlmeans) | Adapté au grain film 35mm/16mm |
-| Équilibré ou faible force | **nlmeans** | Rapide et général |
-
-```bash
-# Tout en auto — l'outil mesure, choisit l'engine et la force
-./adaptive-encoder "film.mkv"
-```
-
 **Désactiver totalement le débruitage** — pour les archives, sources film, ou tout contenu où la fidélité au master prime sur la propreté :
 ```bash
 ./adaptive-encoder "film_35mm.mkv" --no-denoise
 ```
 
-**Forcer une force de débruitage spécifique** — override le calibrage automatique. **Toute valeur > 0 est toujours appliquée**, même sur une source que l'auto aurait classée comme « trop propre pour denoise » :
+**Forcer une force de débruitage spécifique** — override le calibrage automatique (0.0 = aucun filtre, 1.0 = max) :
 ```bash
-# Débruitage léger sur source numérique propre (l'auto aurait skip ce filtre)
+# Débruitage léger sur source numérique propre
 ./adaptive-encoder "source_numerique.mkv" --denoise-strength 0.2
 
 # Débruitage fort sur capture VHS / SD bruitée
@@ -575,24 +550,17 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 ./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
 ```
 
-**Forcer un moteur spécifique** — bypass la sélection auto. La valeur que vous donnez est **toujours appliquée** (avec fallback vers un engine disponible si ffmpeg ne contient pas celui demandé, avec avertissement visible) :
+**Forcer un moteur spécifique** :
 ```bash
 # bm3d — qualité max sur bruit stationnaire (capteur numérique, étalonnage moderne)
 ./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
 
-# nlmeans — rapide et général, force la sélection sans laisser l'auto décider
+# nlmeans — rapide et général
 ./adaptive-encoder "film.mkv" --denoise-engine nlmeans
 
 # hybrid — chaîne hqdn3d + nlmeans, idéal pour sources mixtes (SD/HD upscalés)
 ./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
-
-# Repasser explicitement en auto (équivalent à ne rien passer)
-./adaptive-encoder "film.mkv" --denoise-engine auto
 ```
-
-> 💡 **Comment vérifier ce qui a été appliqué :** la ligne `denoise:` dans `▶ Selecting parameters…` affiche un préfixe `auto→` si la sélection vient de l'auto. Exemple :
-> - `denoise: moderate (auto→hybrid, strength 35%)` → auto a choisi hybrid
-> - `denoise: moderate (hybrid, strength 35%)` → vous avez forcé hybrid via `--denoise-engine hybrid`
 
 ### 🔊 Audio & sous-titres
 
@@ -837,14 +805,6 @@ Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez
 **Espace disque saturé pendant l'encodage Dolby Vision.**
 Les fichiers temporaires DV peuvent être lourds. Utilisez `--temp-dir D:\temp` (Windows) ou `--temp-dir /chemin/disque-libre` (Linux/macOS) pour les rediriger vers un disque avec plus d'espace.
 
-**J'ai forcé `--denoise-strength` ou `--denoise-engine` et l'outil semble ignorer mon choix.**
-Vérifiez la ligne `denoise:` affichée dans `▶ Selecting parameters…` :
-- Préfixe `auto→` = le mode auto a choisi pour vous (vous n'avez pas forcé)
-- Pas de préfixe = votre choix est appliqué tel quel
-- `disabled` = vous avez passé `--no-denoise` ou la source est trop propre (auto sans force)
-
-Si vous avez forcé `--denoise-strength 0.5` et que l'engine n'est pas disponible dans ffmpeg, l'outil affiche un avertissement jaune et fallback vers un engine disponible. La force que vous avez demandée est conservée.
-
 ---
 
 ## ❓ FAQ
@@ -865,10 +825,7 @@ Oui, sous réserve que `dovi_tool`, `hdr10plus_tool` et `mkvmerge` soient dispon
 Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
 
 **Le débruitage est-il actif par défaut ? Mon grain va-t-il être touché ?**
-Le débruitage **adaptatif** est activé par défaut, avec l'engine en mode `auto`. La force est auto-calibrée à partir des métriques de bruit et de grain : si le score combiné est sous ~0.08, aucun filtre n'est appliqué. Sur une source propre (Blu-ray récent sans grain marqué), vous n'aurez aucun traitement. Sur un film 35mm très grenu, vous aurez un débruitage modéré avec l'engine `hybrid` (sélectionné automatiquement parce que le grain domine). Pour garantir zéro filtre quelle que soit la source, utilisez `--no-denoise`. Pour un compromis (préserver une partie de la texture du grain), utilisez `--denoise-preserve-grain`.
-
-**Comment fonctionne le mode `auto` de `--denoise-engine` ?**
-En mode auto (le défaut), l'outil regarde le ratio bruit/grain mesuré sur la source et la force calculée, puis choisit l'engine optimal : **bm3d** quand le bruit stationnaire domine (sources numériques modernes, ratio bruit/grain > 1.3), **hybrid** (hqdn3d + nlmeans) quand le grain domine (film 35mm/16mm, ratio < 0.77), **nlmeans** dans les cas équilibrés ou à faible force. Si vous forcez `--denoise-engine` avec une valeur explicite, l'auto est complètement bypassé et votre choix est appliqué. Si l'engine demandé n'est pas disponible dans le ffmpeg embarqué, l'outil fallback automatiquement vers un engine compatible avec un avertissement visible (jamais d'échec silencieux).
+Le débruitage **adaptatif** est activé par défaut, mais il n'est pas appliqué aveuglément. La force est auto-calibrée à partir des métriques de bruit et de grain : si le score combiné est sous ~0.08, aucun filtre n'est appliqué. Sur une source propre (Blu-ray récent sans grain marqué), vous n'aurez aucun traitement. Sur un film 35mm très grenu, vous aurez un débruitage modéré. Pour garantir zéro filtre quelle que soit la source, utilisez `--no-denoise`. Pour un compromis (préserver une partie de la texture du grain), utilisez `--denoise-preserve-grain`.
 
 **Quand utiliser `--normalize-audio` ?**
 Surtout pour les bibliothèques hétérogènes (films de décennies différentes, mix de sources, doublages enregistrés à des niveaux variables). Le mode `two-pass` mesure d'abord le loudness intégré de tout le fichier puis applique une correction linéaire — c'est la même approche que Netflix/Apple/YouTube utilisent côté plateforme. La cible par défaut `-16 LUFS` est calibrée TV/streaming ; pour la diffusion broadcast EBU R128 stricte, utilisez `-23.0`. Important : activer la normalisation force le ré-encodage audio (AC3), donc vous perdez l'audio bit-perfect d'origine. Sans `--normalize-audio`, les pistes audio sont copiées en bit-perfect.
@@ -987,7 +944,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted via `dovi_tool`, preserved, reinjected. Profile 7 converted to 8.1 by default (compatible with most DV players). `--preserve-dv-profile` outputs HDR10 instead of accepting the conversion.
 - 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream via the x265 `dhdr10-info` parameter. DV and HDR10+ coexist in the same HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI.
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
-- 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain; if the combined score is below threshold (~0.08), no filter is applied. Four engine choices: `auto` (default — smart selection by noise/grain ratio and strength), `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans). `--denoise-preserve-grain` smooths only a fraction of the texture.
+- 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain; if the combined score is below threshold (~0.08), no filter is applied. Three engines: `nlmeans`, `bm3d`, `hybrid` (hqdn3d+nlmeans), plus `auto`. `--denoise-preserve-grain` smooths only a fraction of the texture.
 - 🔊 **EBU R128 audio normalization** — `single-pass` mode (dynamic loudnorm) or `two-pass` (measure then linear correction — recommended). Configurable LUFS target.
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🎞️ **All audio and subtitle tracks** copied by default, zero loss (unless normalization or downmix active)
@@ -1235,25 +1192,15 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
                                   (combined score below ~0.08), no filter is applied
                                   anyway.
 --denoise-strength STRENGTH       Override denoise strength (0.0=off, 1.0=max).
-                                  Overrides the automatic calibration. Any value > 0
-                                  is always honored, regardless of how clean the
-                                  source is.
+                                  Overrides the automatic calibration.
 --denoise-preserve-grain          40% gentler denoise that preserves some film grain
                                   texture.
 --denoise-engine {auto,nlmeans,bm3d,hybrid}
-                                  Pick the denoising engine. Default: 'auto' — smart
-                                  selection from the noise/grain ratio and computed
-                                  strength:
-                                    • bm3d when stationary noise dominates (noise/grain
-                                      ratio > 1.3) — typical of digital sources
-                                    • hybrid (hqdn3d + nlmeans) when grain dominates
-                                      (ratio < 0.77) — typical of 35mm film
-                                    • nlmeans for balanced cases or low strength
-                                  Forcing an explicit value (nlmeans / bm3d / hybrid)
-                                  disables the auto selection and guarantees it's
-                                  applied. If the requested engine is missing from
-                                  ffmpeg, the tool falls back to an available engine
-                                  with a visible warning (never silent failure).
+                                  Force a specific denoise engine instead of automatic
+                                  selection. 'nlmeans' is fast and general-purpose.
+                                  'bm3d' for max quality on stationary noise (3-5x
+                                  slower). 'hybrid' chains hqdn3d + nlmeans for mixed
+                                  sources. 'auto' picks based on the noise/grain profile.
 
 [ Audio & Subtitles ]
 --no-audio                        Remove audio tracks (copied by default)
@@ -1428,29 +1375,14 @@ Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
 
 ### 🌑 Noise reduction
 
-> ℹ️ **Default behavior:** without any denoise flag, the engine is `auto` and the strength is auto-calibrated from measured noise and grain. If the source is very clean (combined score < 0.08), **no filter is applied** — you get your file back without any processing. On a noisy or grainy source, auto picks the engine and the strength.
-
-**Default auto mode (no denoise flag)** — implicit behavior, the tool decides everything. `auto` selects intelligently:
-
-| Detected noise/grain profile | Engine picked | Why |
-|---|---|---|
-| Stationary noise dominates (noise/grain ratio > 1.3) | **bm3d** | Ideal on sensor / clean digital noise |
-| Grain dominates (ratio < 0.77) | **hybrid** (hqdn3d + nlmeans) | Suited for 35mm/16mm film grain |
-| Balanced or low strength | **nlmeans** | Fast and general-purpose |
-
-```bash
-# Full auto — the tool measures, picks the engine and the strength
-./adaptive-encoder "film.mkv"
-```
-
 **Fully disable denoising** — for archival, film sources, or any content where master fidelity matters more than cleanliness:
 ```bash
 ./adaptive-encoder "film_35mm.mkv" --no-denoise
 ```
 
-**Force a specific denoise strength** — overrides the automatic calibration. **Any value > 0 is always applied**, even on a source that auto would have classified as "too clean to denoise":
+**Force a specific denoise strength** — overrides the automatic calibration (0.0 = no filter, 1.0 = max):
 ```bash
-# Light denoise on clean digital source (auto would have skipped this filter)
+# Light denoise on clean digital source
 ./adaptive-encoder "digital_source.mkv" --denoise-strength 0.2
 
 # Strong denoise on VHS / noisy SD capture
@@ -1462,24 +1394,17 @@ Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
 ./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
 ```
 
-**Force a specific engine** — bypasses the auto selection. The value you provide is **always applied** (with fallback to an available engine if ffmpeg lacks the one requested, with a visible warning):
+**Force a specific engine:**
 ```bash
 # bm3d — max quality on stationary noise (digital sensor, modern grading)
 ./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
 
-# nlmeans — fast and general-purpose, forces selection without letting auto decide
+# nlmeans — fast and general-purpose
 ./adaptive-encoder "film.mkv" --denoise-engine nlmeans
 
 # hybrid — chains hqdn3d + nlmeans, ideal for mixed sources (upscaled SD/HD)
 ./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
-
-# Explicitly back to auto (same as passing nothing)
-./adaptive-encoder "film.mkv" --denoise-engine auto
 ```
-
-> 💡 **How to verify what was applied:** the `denoise:` line in `▶ Selecting parameters…` shows an `auto→` prefix if auto picked the engine. Example:
-> - `denoise: moderate (auto→hybrid, strength 35%)` → auto picked hybrid
-> - `denoise: moderate (hybrid, strength 35%)` → you forced hybrid with `--denoise-engine hybrid`
 
 ### 🔊 Audio & subtitles
 
@@ -1724,14 +1649,6 @@ Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` t
 **Disk space saturated during Dolby Vision encoding.**
 DV temp files can be large. Use `--temp-dir D:\temp` (Windows) or `--temp-dir /path/free-disk` (Linux/macOS) to redirect them to a disk with more space.
 
-**I forced `--denoise-strength` or `--denoise-engine` and the tool seems to ignore my choice.**
-Check the `denoise:` line shown in `▶ Selecting parameters…`:
-- `auto→` prefix = auto mode picked for you (you didn't force)
-- No prefix = your choice is applied as-is
-- `disabled` = you passed `--no-denoise` or the source is too clean (auto without force)
-
-If you forced `--denoise-strength 0.5` and the engine isn't available in ffmpeg, the tool shows a yellow warning and falls back to an available engine. The strength you requested is preserved.
-
 ---
 
 ## ❓ FAQ
@@ -1752,10 +1669,7 @@ Yes, provided `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are available. On Lin
 Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
 
 **Is denoising active by default? Will my grain be touched?**
-**Adaptive** denoising is enabled by default, with the engine in `auto` mode. Strength is auto-calibrated from noise and grain metrics: if the combined score is below ~0.08, no filter is applied. On a clean source (recent Blu-ray without heavy grain), you'll get no processing. On a heavily-grained 35mm film, you'll get moderate denoising with the `hybrid` engine (selected automatically because grain dominates). To guarantee zero filtering regardless of the source, use `--no-denoise`. For a compromise (preserve some grain texture), use `--denoise-preserve-grain`.
-
-**How does the `--denoise-engine` `auto` mode work?**
-In auto mode (the default), the tool looks at the measured noise/grain ratio on the source and the computed strength, then picks the optimal engine: **bm3d** when stationary noise dominates (modern digital sources, noise/grain ratio > 1.3), **hybrid** (hqdn3d + nlmeans) when grain dominates (35mm/16mm film, ratio < 0.77), **nlmeans** in balanced cases or at low strength. If you force `--denoise-engine` with an explicit value, auto is completely bypassed and your choice is applied. If the requested engine isn't available in the bundled ffmpeg, the tool automatically falls back to a compatible engine with a visible warning (never silent failure).
+**Adaptive** denoising is enabled by default, but it's not applied blindly. Strength is auto-calibrated from noise and grain metrics: if the combined score is below ~0.08, no filter is applied. On a clean source (recent Blu-ray without heavy grain), you'll get no processing. On a heavily-grained 35mm film, you'll get moderate denoising. To guarantee zero filtering regardless of the source, use `--no-denoise`. For a compromise (preserve some grain texture), use `--denoise-preserve-grain`.
 
 **When should I use `--normalize-audio`?**
 Mostly for heterogeneous libraries (films from different decades, mix of sources, dubs recorded at varying levels). The `two-pass` mode first measures integrated loudness across the whole file then applies a linear correction — the same approach Netflix/Apple/YouTube use on their platform side. Default target `-16 LUFS` is calibrated for TV/streaming; for strict EBU R128 broadcast, use `-23.0`. Important: enabling normalization forces audio re-encoding (AC3), so you lose the bit-perfect original audio. Without `--normalize-audio`, audio tracks are stream-copied.
