@@ -380,6 +380,284 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 
 ---
 
+## 🧰 Exemples d'utilisation des flags
+
+Cette section regroupe des exemples concrets, organisés par catégorie de flag. Les exemples utilisent la syntaxe Linux/macOS (`./adaptive-encoder`) — sur Windows, remplacez par `.\adaptive-encoder.exe`.
+
+### 📐 Paramètres vidéo
+
+**Forcer le framerate à 23.976 (typique cinéma) — utile si la source affiche un framerate variable ou un wrap A/V suspect :**
+```bash
+./adaptive-encoder "film.mkv" --force-fps 23.976
+```
+
+**Désactiver la détection des bandes noires** — à utiliser si la source n'a aucune bande noire (Academy 1.37, 1.85 plein cadre) ou si l'auto-crop coupe à tort des éléments graphiques :
+```bash
+./adaptive-encoder "film_137.mkv" --no-crop-detect
+```
+
+**Ajuster manuellement la baseline CRF** — un CRF de base plus élevé réduit la taille au prix de la qualité visuelle :
+```bash
+# Qualité plus haute (fichier plus lourd, plus proche du remux)
+./adaptive-encoder "film.mkv" --base-crf 20.0
+
+# Taille plus petite (qualité légèrement dégradée, utile pour la diffusion)
+./adaptive-encoder "film.mkv" --base-crf 24.0
+```
+
+**Convertir une source 4K HDR en 1080p SDR** — pour les TV anciennes ou les écrans non-HDR. La conversion utilise libplacebo (BT.2390) avec fallback zscale+tonemap=mobius :
+```bash
+./adaptive-encoder "4k_dolbyvision.mkv" --downscale-1080p-sdr
+```
+
+**Plus d'échantillons pour l'analyse adaptative** — utile sur les films avec contenu très varié (anthologie, documentaire long) où le défaut peut sous-représenter certaines scènes :
+```bash
+./adaptive-encoder "anthologie_3h.mkv" --max-samples 600
+```
+
+### 🎚️ Débit & préréglages
+
+**Activer le plafonnement adaptatif VBV** — `--vbv` calibre automatiquement le débit max selon la résolution (7 Mbps en 720p, 12 Mbps en 1080p, 17 Mbps en 1440p, 28 Mbps en 4K) :
+```bash
+./adaptive-encoder "film.mkv" --vbv
+```
+
+**Imposer un plafond manuel** — pour cibler une taille de fichier précise, par exemple 10 Mbps :
+```bash
+./adaptive-encoder "film.mkv" --max-bitrate 10000
+```
+
+**Plafond manuel + buffer VBV ajusté** — sur du contenu très variable, élargir le buffer évite les pompages de débit :
+```bash
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
+```
+
+**Encodage plus rapide** — bascule sur `slower` au lieu de `veryslow` (env. 2× plus rapide, qualité ~1-2 % en dessous) :
+```bash
+./adaptive-encoder "film.mkv" --no-veryslow
+```
+
+**Tune `grain` forcé** — pour les pellicules 35mm/16mm scannées où vous voulez garder la structure du grain :
+```bash
+./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
+```
+
+**Tune `animation` forcé** — pour les dessins animés, anime, motion design (zones plates, bords nets) :
+```bash
+./adaptive-encoder "anime.mkv" --force-tune animation
+```
+
+### 📺 Dolby Vision & HDR
+
+**Forcer la sortie en HDR10 même si la source est Dolby Vision** — utile pour la compatibilité avec les lecteurs qui buguent sur le DV :
+```bash
+./adaptive-encoder "uhd_dolbyvision.mkv" --no-dolby-vision
+```
+
+**Refuser la conversion Profil 7 → 8.1** — préserve le DV uniquement si le profil source est reproductible nativement, sinon sort en HDR10 :
+```bash
+./adaptive-encoder "blu-ray_dv_profil7.mkv" --preserve-dv-profile
+```
+
+**Rediriger les fichiers temporaires DV** — crucial sur Linux avec `/tmp` en tmpfs (limité à la RAM) ou si la partition système est petite :
+```bash
+# Linux
+./adaptive-encoder "film_dv.mkv" --temp-dir /mnt/ssd/temp
+
+# macOS
+./adaptive-encoder "film_dv.mkv" --temp-dir ~/temp
+
+# Windows (depuis PowerShell)
+.\adaptive-encoder.exe "film_dv.mkv" --temp-dir D:\temp
+```
+
+**Ignorer HDR10+ même si présent** — utile si votre TV ne gère que HDR10 et que vous voulez éviter les SEI inutiles :
+```bash
+./adaptive-encoder "film_hdr10plus.mkv" --no-hdr10plus
+```
+
+### 🌑 Réduction du bruit
+
+**Désactiver totalement le débruitage** — pour les archives, sources film, ou tout contenu où la fidélité au master prime sur la propreté :
+```bash
+./adaptive-encoder "film_35mm.mkv" --no-denoise
+```
+
+**Forcer une force de débruitage spécifique** — override le calibrage automatique (0.0 = aucun filtre, 1.0 = max) :
+```bash
+# Débruitage léger sur source numérique propre
+./adaptive-encoder "source_numerique.mkv" --denoise-strength 0.2
+
+# Débruitage fort sur capture VHS / SD bruitée
+./adaptive-encoder "vhs_rip.mkv" --denoise-strength 0.8
+```
+
+**Mode préservation du grain** — débruite 40 % moins fort, conserve une partie de la texture (compromis archive ↔ propreté) :
+```bash
+./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
+```
+
+**Forcer un moteur spécifique** :
+```bash
+# bm3d — qualité max sur bruit stationnaire (capteur numérique, étalonnage moderne)
+./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
+
+# nlmeans — rapide et général
+./adaptive-encoder "film.mkv" --denoise-engine nlmeans
+
+# hybrid — chaîne hqdn3d + nlmeans, idéal pour sources mixtes (SD/HD upscalés)
+./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
+```
+
+### 🔊 Audio & sous-titres
+
+**Supprimer toutes les pistes audio** — pour produire un master vidéo seul :
+```bash
+./adaptive-encoder "film.mkv" --no-audio
+```
+
+**Supprimer tous les sous-titres** :
+```bash
+./adaptive-encoder "film.mkv" --no-subs
+```
+
+**Garder uniquement le français et l'anglais** — supprime les autres doublages, première langue listée = défaut du player :
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "fre,eng"
+```
+
+**Garder uniquement la VO anglaise (suppression des doublages)** :
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "eng"
+```
+
+**Downmix 7.1/Atmos → 5.1 ou 2.0** — pour les setups home cinéma plus simples ou pour économiser de l'espace :
+```bash
+./adaptive-encoder "film_atmos.mkv" --downmix-audio
+```
+
+**Normalisation audio rapide (single-pass)** :
+```bash
+./adaptive-encoder "film.mkv" --normalize-audio single-pass
+```
+
+**Normalisation audio précise (two-pass) — recommandé** :
+```bash
+./adaptive-encoder "film.mkv" --normalize-audio two-pass
+```
+
+**Cible LUFS personnalisée** :
+```bash
+# Broadcast EBU R128 strict
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
+
+# Streaming type Spotify/YouTube (-14 LUFS)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
+```
+
+### 🖥️ Système
+
+**Mode verbose — voir le détail de l'analyse adaptative** :
+```bash
+./adaptive-encoder "film.mkv" --verbose
+```
+
+**Dry-run — analyser et afficher la commande sans encoder** :
+```bash
+./adaptive-encoder "film.mkv" --dry-run
+```
+
+**Spécifier un fichier de sortie personnalisé** :
+```bash
+./adaptive-encoder "input.mkv" -o "/mnt/library/Movies/Inception (2010).mkv"
+```
+
+---
+
+### 🎯 Combinaisons utiles (scénarios complets)
+
+**📼 Archive 35mm grenu, fidélité au master maximale**
+Préserve la structure du grain, aucun débruitage, tune adapté :
+```bash
+./adaptive-encoder "western_1970.mkv" \
+  --no-denoise \
+  --force-tune grain \
+  --base-crf 20.0
+```
+
+**🎌 Anime / dessin animé optimisé**
+Tune animation, débruitage actif (l'anime moderne a peu de grain) :
+```bash
+./adaptive-encoder "anime_serie_s01e01.mkv" \
+  --force-tune animation \
+  --audio-lang "jpn,fre"
+```
+
+**💾 Réduction de taille agressive pour serveur de streaming personnel**
+CRF plus haut + plafond bitrate + downmix + langues filtrées :
+```bash
+./adaptive-encoder "film.mkv" \
+  --base-crf 24.0 \
+  --max-bitrate 8000 \
+  --downmix-audio \
+  --audio-lang "fre,eng" \
+  --no-veryslow
+```
+
+**📡 Bibliothèque hétérogène avec audio normalisé**
+Two-pass loudness à -16 LUFS, filtres langue, plafond VBV adaptatif :
+```bash
+./adaptive-encoder "film.mkv" \
+  --vbv \
+  --audio-lang "fre,eng" \
+  --normalize-audio two-pass
+```
+
+**📺 Blu-ray UHD Dolby Vision Profil 7 — qualité maximale, A/V parfait**
+Force 23.976 pour resync DV, temp dir externe, base-crf bas :
+```bash
+./adaptive-encoder "uhd_dv_profil7.mkv" \
+  --force-fps 23.976 \
+  --temp-dir /mnt/ssd/temp \
+  --base-crf 20.0
+```
+
+**📺 Conversion 4K HDR → 1080p SDR pour TV ancienne avec loudness contrôlé**
+Downscale + tonemap + downmix + normalisation broadcast :
+```bash
+./adaptive-encoder "4k_hdr10plus.mkv" \
+  --downscale-1080p-sdr \
+  --downmix-audio \
+  --normalize-audio two-pass \
+  --normalize-audio-target -23.0
+```
+
+**🧪 Test avant gros batch — vérifier la détection sans encoder**
+Dry-run + verbose pour voir l'analyse complète :
+```bash
+./adaptive-encoder "echantillon.mkv" --dry-run --verbose
+```
+
+**⚡ Encodage rapide d'un gros lot, qualité raisonnable**
+Slower au lieu de veryslow, CRF légèrement plus haut :
+```bash
+./adaptive-encoder "film.mkv" \
+  --no-veryslow \
+  --base-crf 23.0 \
+  --vbv
+```
+
+**🎞️ Capture VHS/DVD restaurée — débruitage agressif**
+bm3d + force manuelle + tune grain pour ce qui reste de texture :
+```bash
+./adaptive-encoder "vhs_concert.mkv" \
+  --denoise-engine bm3d \
+  --denoise-strength 0.7 \
+  --base-crf 22.0
+```
+
+---
+
 ## 🛠️ Dépannage
 
 **La commande ne fait rien / "n'est pas reconnu".**
@@ -818,6 +1096,284 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 [ System ]
 --verbose                         Display technical details of adaptive analysis
 --dry-run                         Display analysis and command without encoding
+```
+
+---
+
+## 🧰 Flag usage examples
+
+This section gathers concrete examples, organized by flag category. Examples use Linux/macOS syntax (`./adaptive-encoder`) — on Windows, replace with `.\adaptive-encoder.exe`.
+
+### 📐 Video settings
+
+**Force framerate to 23.976 (typical cinema)** — useful if the source reports variable framerate or has a suspicious A/V wrap:
+```bash
+./adaptive-encoder "film.mkv" --force-fps 23.976
+```
+
+**Disable black bar detection** — use this when the source has no black bars (Academy 1.37, full-frame 1.85) or when auto-crop is incorrectly trimming graphic elements:
+```bash
+./adaptive-encoder "film_137.mkv" --no-crop-detect
+```
+
+**Manually adjust the CRF baseline** — a higher base CRF reduces size at the cost of visual quality:
+```bash
+# Higher quality (larger file, closer to remux)
+./adaptive-encoder "film.mkv" --base-crf 20.0
+
+# Smaller size (slightly degraded quality, useful for streaming)
+./adaptive-encoder "film.mkv" --base-crf 24.0
+```
+
+**Convert a 4K HDR source to 1080p SDR** — for older TVs or non-HDR displays. The conversion uses libplacebo (BT.2390) with zscale+tonemap=mobius fallback:
+```bash
+./adaptive-encoder "4k_dolbyvision.mkv" --downscale-1080p-sdr
+```
+
+**More samples for adaptive analysis** — useful for films with highly varied content (anthology, long documentaries) where the default may under-represent some scenes:
+```bash
+./adaptive-encoder "anthology_3h.mkv" --max-samples 600
+```
+
+### 🎚️ Bitrate & presets
+
+**Enable adaptive VBV cap** — `--vbv` automatically calibrates max bitrate to resolution (7 Mbps at 720p, 12 Mbps at 1080p, 17 Mbps at 1440p, 28 Mbps at 4K):
+```bash
+./adaptive-encoder "film.mkv" --vbv
+```
+
+**Force a manual cap** — to target a specific file size, e.g. 10 Mbps:
+```bash
+./adaptive-encoder "film.mkv" --max-bitrate 10000
+```
+
+**Manual cap + custom VBV buffer** — on highly variable content, a larger buffer prevents bitrate pumping:
+```bash
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
+```
+
+**Faster encoding** — switches to `slower` instead of `veryslow` (about 2× faster, quality ~1-2% below):
+```bash
+./adaptive-encoder "film.mkv" --no-veryslow
+```
+
+**Force `grain` tune** — for scanned 35mm/16mm film where you want to keep the grain structure:
+```bash
+./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
+```
+
+**Force `animation` tune** — for cartoons, anime, motion design (flat areas, sharp edges):
+```bash
+./adaptive-encoder "anime.mkv" --force-tune animation
+```
+
+### 📺 Dolby Vision & HDR
+
+**Force HDR10 output even if the source is Dolby Vision** — useful for compatibility with players that bug on DV:
+```bash
+./adaptive-encoder "uhd_dolbyvision.mkv" --no-dolby-vision
+```
+
+**Refuse the Profile 7 → 8.1 conversion** — preserves DV only if the source profile can be reproduced natively, otherwise outputs HDR10:
+```bash
+./adaptive-encoder "blu-ray_dv_profile7.mkv" --preserve-dv-profile
+```
+
+**Redirect DV temp files** — crucial on Linux with `/tmp` on tmpfs (limited to RAM) or if the system partition is small:
+```bash
+# Linux
+./adaptive-encoder "film_dv.mkv" --temp-dir /mnt/ssd/temp
+
+# macOS
+./adaptive-encoder "film_dv.mkv" --temp-dir ~/temp
+
+# Windows (from PowerShell)
+.\adaptive-encoder.exe "film_dv.mkv" --temp-dir D:\temp
+```
+
+**Ignore HDR10+ even if present** — useful if your TV only handles HDR10 and you want to avoid unnecessary SEI:
+```bash
+./adaptive-encoder "film_hdr10plus.mkv" --no-hdr10plus
+```
+
+### 🌑 Noise reduction
+
+**Fully disable denoising** — for archival, film sources, or any content where master fidelity matters more than cleanliness:
+```bash
+./adaptive-encoder "film_35mm.mkv" --no-denoise
+```
+
+**Force a specific denoise strength** — overrides the automatic calibration (0.0 = no filter, 1.0 = max):
+```bash
+# Light denoise on clean digital source
+./adaptive-encoder "digital_source.mkv" --denoise-strength 0.2
+
+# Strong denoise on VHS / noisy SD capture
+./adaptive-encoder "vhs_rip.mkv" --denoise-strength 0.8
+```
+
+**Grain preservation mode** — denoises 40% less aggressively, keeps some texture (compromise between archival and cleanliness):
+```bash
+./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
+```
+
+**Force a specific engine:**
+```bash
+# bm3d — max quality on stationary noise (digital sensor, modern grading)
+./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
+
+# nlmeans — fast and general-purpose
+./adaptive-encoder "film.mkv" --denoise-engine nlmeans
+
+# hybrid — chains hqdn3d + nlmeans, ideal for mixed sources (upscaled SD/HD)
+./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
+```
+
+### 🔊 Audio & subtitles
+
+**Strip all audio tracks** — to produce a video-only master:
+```bash
+./adaptive-encoder "film.mkv" --no-audio
+```
+
+**Strip all subtitle tracks:**
+```bash
+./adaptive-encoder "film.mkv" --no-subs
+```
+
+**Keep only English and French** — removes other dubs, first language listed = player default:
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
+```
+
+**Keep only the original English VO (drop dubs):**
+```bash
+./adaptive-encoder "film.mkv" --audio-lang "eng"
+```
+
+**Downmix 7.1/Atmos → 5.1 or 2.0** — for simpler home theater setups or space savings:
+```bash
+./adaptive-encoder "film_atmos.mkv" --downmix-audio
+```
+
+**Fast audio normalization (single-pass):**
+```bash
+./adaptive-encoder "film.mkv" --normalize-audio single-pass
+```
+
+**Precise audio normalization (two-pass) — recommended:**
+```bash
+./adaptive-encoder "film.mkv" --normalize-audio two-pass
+```
+
+**Custom LUFS target:**
+```bash
+# Strict EBU R128 broadcast
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
+
+# Spotify/YouTube-style streaming (-14 LUFS)
+./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
+```
+
+### 🖥️ System
+
+**Verbose mode — see adaptive analysis details:**
+```bash
+./adaptive-encoder "film.mkv" --verbose
+```
+
+**Dry-run — analyze and display the command without encoding:**
+```bash
+./adaptive-encoder "film.mkv" --dry-run
+```
+
+**Specify a custom output file:**
+```bash
+./adaptive-encoder "input.mkv" -o "/mnt/library/Movies/Inception (2010).mkv"
+```
+
+---
+
+### 🎯 Useful combinations (full scenarios)
+
+**📼 Grainy 35mm archive, maximum master fidelity**
+Preserves grain structure, no denoising, tuned encoder:
+```bash
+./adaptive-encoder "western_1970.mkv" \
+  --no-denoise \
+  --force-tune grain \
+  --base-crf 20.0
+```
+
+**🎌 Anime / cartoon optimized**
+Animation tune, denoising active (modern anime has little grain):
+```bash
+./adaptive-encoder "anime_series_s01e01.mkv" \
+  --force-tune animation \
+  --audio-lang "jpn,eng"
+```
+
+**💾 Aggressive size reduction for personal streaming server**
+Higher CRF + bitrate cap + downmix + filtered languages:
+```bash
+./adaptive-encoder "film.mkv" \
+  --base-crf 24.0 \
+  --max-bitrate 8000 \
+  --downmix-audio \
+  --audio-lang "eng,fre" \
+  --no-veryslow
+```
+
+**📡 Heterogeneous library with normalized audio**
+Two-pass loudness at -16 LUFS, language filter, adaptive VBV cap:
+```bash
+./adaptive-encoder "film.mkv" \
+  --vbv \
+  --audio-lang "eng,fre" \
+  --normalize-audio two-pass
+```
+
+**📺 UHD Blu-ray Dolby Vision Profile 7 — max quality, perfect A/V**
+Force 23.976 for DV resync, external temp dir, low base-crf:
+```bash
+./adaptive-encoder "uhd_dv_profile7.mkv" \
+  --force-fps 23.976 \
+  --temp-dir /mnt/ssd/temp \
+  --base-crf 20.0
+```
+
+**📺 4K HDR → 1080p SDR for an older TV with controlled loudness**
+Downscale + tonemap + downmix + broadcast normalization:
+```bash
+./adaptive-encoder "4k_hdr10plus.mkv" \
+  --downscale-1080p-sdr \
+  --downmix-audio \
+  --normalize-audio two-pass \
+  --normalize-audio-target -23.0
+```
+
+**🧪 Test before a large batch — verify detection without encoding**
+Dry-run + verbose to see the full analysis:
+```bash
+./adaptive-encoder "sample.mkv" --dry-run --verbose
+```
+
+**⚡ Fast batch encoding, reasonable quality**
+Slower instead of veryslow, slightly higher CRF:
+```bash
+./adaptive-encoder "film.mkv" \
+  --no-veryslow \
+  --base-crf 23.0 \
+  --vbv
+```
+
+**🎞️ Restored VHS/DVD capture — aggressive denoising**
+bm3d + manual strength + grain tune for what texture remains:
+```bash
+./adaptive-encoder "vhs_concert.mkv" \
+  --denoise-engine bm3d \
+  --denoise-strength 0.7 \
+  --base-crf 22.0
 ```
 
 ---
