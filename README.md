@@ -289,6 +289,11 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 ```
 -h, --help                        Affiche l'aide et quitte
 -o, --output OUTPUT               Fichier vidéo de sortie (défaut : <entrée>_adaptive.mkv)
+--auto-rename                     Si le fichier de sortie est verrouillé par un autre processus
+                                  (ouvert dans un player, scanné par l'antivirus, retenu par un
+                                  ffmpeg orphelin, etc.), utilise automatiquement un nom alternatif
+                                  (_v2, _v3, ...) au lieu d'abandonner. Défaut : abandonne avec un
+                                  message diagnostic listant les causes courantes.
 
 [ Paramètres vidéo ]
 --force-fps FORCE_FPS             Force la conversion de fréquence d'images (ex. 23.976).
@@ -357,8 +362,7 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 --no-subs                         Supprime les sous-titres (copiés par défaut)
 --audio-lang AUDIO_LANG           Garde uniquement certaines langues audio (ex. 'fre,eng').
                                   Supprime les doublages indésirables pour économiser de
-                                  l'espace. La première langue listée devient la piste par
-                                  défaut du player.
+                                  l'espace.
 --downmix-audio                   Mixe les pistes 7.1/Atmos lourdes en 5.1 ou 2.0 standard.
 --normalize-audio {off,single-pass,two-pass}
                                   Applique la normalisation de loudness EBU R128 sur les
@@ -448,7 +452,7 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 #### Plafonner le débit avec VBV
 
-**`--vbv` — Plafond adaptatif automatique** : calibre le débit max selon la résolution effective post-crop (~7 Mbps en 720p, ~12 Mbps en 1080p, ~17 Mbps en 1440p, ~28 Mbps en 4K, capé à 35 Mbps). Recommandé si vous voulez un plafond raisonnable sans réfléchir :
+**`--vbv` — Plafond adaptatif automatique** : calibre le débit max selon la résolution effective post-crop (~7 Mbps en 720p, ~12 Mbps en 1080p, ~17 Mbps en 1440p, ~28 Mbps en 4K). Borné entre **2.5 Mbps et 35 Mbps** (plancher pour éviter de tuer la qualité sur SD/360p, plafond pour rester compatible avec les players grand public). Recommandé si vous voulez un plafond raisonnable sans réfléchir :
 
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
@@ -466,13 +470,16 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 > ℹ️ **Interaction `--vbv` / `--max-bitrate` :** si vous passez `--max-bitrate`, sa valeur prime et le calcul automatique de `--vbv` est ignoré. Il n'est donc pas utile de combiner les deux flags.
 
-**`--vbv-bufsize` — Taille du buffer VBV en kbits** : par défaut, le buffer = 2× max bitrate. Élargir le buffer permet des pics plus longs (lisse les pompages sur contenu très variable) :
+**`--vbv-bufsize` — Taille du buffer VBV en kbits** : par défaut, le buffer = **1.5× max bitrate**. Élargir le buffer permet des pics plus longs (lisse les pompages sur contenu très variable) :
 
 ```bash
-# Buffer 2× du plafond — comportement par défaut, donné pour référence
+# Buffer 1.5× du plafond — comportement par défaut, donné pour référence
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 22500
+
+# Buffer 2× — pour scènes très variables (sports, action rapide, feux d'artifice)
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
 
-# Buffer 3× — pour scènes très variables (sports, action rapide, feux d'artifice)
+# Buffer 3× — limite des spécifications de player typiques (au-delà : risques d'incompatibilité)
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
 ```
 
@@ -571,43 +578,48 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 #### Filtrer les pistes audio par langue
 
-`--audio-lang` ne garde que les langues listées (codes ISO 639-2/B : `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **La première langue listée devient la piste par défaut du player.** Les pistes audio non listées sont supprimées. Les sous-titres ne sont **pas** filtrés par ce flag — utilisez `--no-subs` si vous voulez tout retirer.
+`--audio-lang` ne garde que les langues listées (codes ISO 639-2/B : `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **Le flag agit uniquement comme un filtre — il ne réordonne pas les pistes.** Les pistes audio conservées gardent l'ordre du fichier source ; la piste par défaut du player sera donc la première piste *du fichier source* qui correspond à une des langues listées. Les sous-titres ne sont **pas** filtrés par ce flag — utilisez `--no-subs` si vous voulez tout retirer.
 
 ```bash
-# VO anglaise + VF, anglais en piste par défaut
+# Garde anglais + français (l'ordre dans la sortie suit le fichier source,
+# pas l'ordre listé ici)
 ./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-
-# Même film, mais français en piste par défaut
-./adaptive-encoder "film.mkv" --audio-lang "fre,eng"
 
 # Uniquement la VO anglaise (toutes les autres pistes supprimées)
 ./adaptive-encoder "film.mkv" --audio-lang "eng"
 
-# Anime : japonais en piste par défaut, anglais et français en secours
+# Anime : garde japonais + anglais + français, ordre source préservé
 ./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
 ```
 
+> 💡 Pour réordonner les pistes ou changer la piste par défaut, c'est à faire en post-traitement avec `mkvmerge` (`--default-track-flag`) ou `mkvpropedit`.
+
 #### Downmixer les pistes multicanal lourdes
 
-`--downmix-audio` choisit automatiquement la cible selon le nombre de canaux source. **Le ré-encodage est obligatoire** (impossible de stream-copier un downmix). Le codec utilisé est **AC3** (Dolby Digital, compatibilité maximale).
+`--downmix-audio` est **conditionnel** : il ne ré-encode que les pistes qui ont effectivement besoin d'être downmixées (8 canaux ou plus). Les pistes 5.1, stéréo et mono restent **stream-copiées bit-perfect** (codec d'origine préservé) tant que `--normalize-audio` n'est pas aussi actif.
 
-| Source détectée | Cible de sortie | Débit AC3 |
+| Source détectée | Cible avec `--downmix-audio` seul | Avec `--downmix-audio` + `--normalize-audio` |
 |---|---|---|
-| Atmos / TrueHD Atmos / DTS:X | 5.1 | 640 kbps |
-| 7.1 (8 canaux) | 5.1 | 640 kbps |
-| 5.1 (6 canaux) | 5.1 (ré-encodé) | 640 kbps |
-| Stéréo / mono | inchangé | 192 kbps |
+| Atmos / TrueHD Atmos / DTS:X (8+ canaux) | **5.1 AC3 640 kbps** (ré-encodé) | 5.1 AC3 640 kbps |
+| 7.1 (8 canaux) | **5.1 AC3 640 kbps** (ré-encodé) | 5.1 AC3 640 kbps |
+| 5.1 (6 canaux) | **stream-copiée** (codec d'origine) | 5.1 AC3 640 kbps |
+| Stéréo (2 canaux) | **stream-copiée** (codec d'origine) | Stéréo AC3 192 kbps |
+| Mono (1 canal) | **stream-copiée** (codec d'origine) | Mono AC3 96 kbps |
+
+> ℹ️ Atmos en EAC3 JOC est typiquement délivré sur une base 5.1 (6 canaux) — l'outil le détecte comme 5.1 et le **stream-copie** (préservant les métadonnées Atmos). Seul Atmos en TrueHD (base 7.1.x → 8 canaux reportés) déclenche le downmix vers 5.1 AC3.
 
 ```bash
-# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps
+# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps (les pistes 5.1 ou stéréo restent intactes)
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
 ```
 
-> ⚠️ **Pour répondre à la question « comment obtenir spécifiquement 5.1 AC3 à 640 kbps ? » :** c'est exactement ce que produit `--downmix-audio` sur une source 7.1 ou Atmos. Le 640 kbps n'est pas configurable en CLI — c'est la valeur fixe utilisée par l'outil pour le 5.1 (et 192 kbps pour la stéréo). Si vous avez besoin d'un autre débit (ex. 448 kbps), d'un autre codec (EAC3, AAC, Opus), ou de forcer la sortie en stéréo (le flag `--downmix-audio` cible toujours le 5.1 sur source 7.1+), c'est à faire en post-traitement avec ffmpeg.
+> ⚠️ **Pour répondre à la question « comment obtenir spécifiquement 5.1 AC3 à 640 kbps ? » :** c'est exactement ce que produit `--downmix-audio` sur une source 7.1 ou TrueHD Atmos. Le 640 kbps n'est pas configurable en CLI — c'est la valeur fixe utilisée par l'outil pour le 5.1 (192 kbps pour la stéréo, 96 kbps pour le mono). Si vous voulez **forcer le ré-encodage AC3 même sur une source déjà en 5.1** (par exemple pour normaliser la loudness et avoir un débit identique sur toute la bibliothèque), combinez avec `--normalize-audio two-pass`.
+>
+> Si vous avez besoin d'un autre débit (ex. 448 kbps), d'un autre codec (EAC3, AAC, Opus), ou de forcer la sortie en stéréo (le flag `--downmix-audio` cible toujours le 5.1 sur source 7.1+), c'est à faire en post-traitement avec ffmpeg.
 
 #### Normalisation EBU R128 (loudness)
 
-`--normalize-audio` applique une normalisation de loudness aux pistes audio conservées. **Active obligatoirement le ré-encodage** en AC3 → vous perdez l'audio bit-perfect d'origine (mêmes débits que `--downmix-audio` : 640 kbps pour 5.1, 192 kbps pour stéréo).
+`--normalize-audio` applique une normalisation de loudness aux pistes audio conservées. **Active obligatoirement le ré-encodage** en AC3 → vous perdez l'audio bit-perfect d'origine. Débits AC3 : 640 kbps pour 5.1, 192 kbps pour stéréo, **96 kbps pour mono**.
 
 Deux modes :
 
@@ -1123,6 +1135,11 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 ```
 -h, --help                        Display this help message and exit
 -o, --output OUTPUT               Output video file (default: <input>_adaptive.mkv)
+--auto-rename                     If the output file is locked by another process (open in a
+                                  player, scanned by antivirus, held by a stale ffmpeg, etc.),
+                                  automatically pick an alternative name (_v2, _v3, ...) instead
+                                  of aborting. Default: abort with a diagnostic message listing
+                                  common causes.
 
 [ Video Settings ]
 --force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976).
@@ -1189,8 +1206,7 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 --no-audio                        Remove audio tracks (copied by default)
 --no-subs                         Remove subtitle tracks (copied by default)
 --audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'fre,eng').
-                                  Removes unwanted dubs to save space. The first language
-                                  listed becomes the player's default track.
+                                  Removes unwanted dubs to save space.
 --downmix-audio                   Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0.
 --normalize-audio {off,single-pass,two-pass}
                                   Apply EBU R128 loudness normalization to all kept audio
@@ -1280,7 +1296,7 @@ Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
 
 #### Cap the bitrate with VBV
 
-**`--vbv` — Automatic adaptive cap**: calibrates max bitrate to the effective post-crop resolution (~7 Mbps at 720p, ~12 Mbps at 1080p, ~17 Mbps at 1440p, ~28 Mbps at 4K, capped at 35 Mbps). Recommended if you want a reasonable cap without thinking:
+**`--vbv` — Automatic adaptive cap**: calibrates max bitrate to the effective post-crop resolution (~7 Mbps at 720p, ~12 Mbps at 1080p, ~17 Mbps at 1440p, ~28 Mbps at 4K). Bounded between **2.5 Mbps and 35 Mbps** (floor to keep SD/360p watchable, cap to stay compatible with consumer players). Recommended if you want a reasonable cap without thinking:
 
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
@@ -1298,13 +1314,16 @@ Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
 
 > ℹ️ **`--vbv` / `--max-bitrate` interaction:** if you pass `--max-bitrate`, its value wins and `--vbv`'s automatic calc is ignored. Combining both flags isn't useful.
 
-**`--vbv-bufsize` — VBV buffer size in kbits**: by default, buffer = 2× max bitrate. A larger buffer allows longer peaks (smooths bitrate pumping on highly variable content):
+**`--vbv-bufsize` — VBV buffer size in kbits**: by default, buffer = **1.5× max bitrate**. A larger buffer allows longer peaks (smooths bitrate pumping on highly variable content):
 
 ```bash
-# Buffer 2× cap — default behavior, shown for reference
+# Buffer 1.5× cap — default behavior, shown for reference
+./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 22500
+
+# Buffer 2× — for highly variable scenes (sports, fast action, fireworks)
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
 
-# Buffer 3× — for highly variable scenes (sports, fast action, fireworks)
+# Buffer 3× — typical player spec ceiling (beyond that: compatibility risks)
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
 ```
 
@@ -1403,43 +1422,48 @@ Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
 
 #### Filter audio tracks by language
 
-`--audio-lang` keeps only the listed languages (ISO 639-2/B codes: `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **The first language listed becomes the player's default track.** Audio tracks not listed are removed. Subtitles are **not** filtered by this flag — use `--no-subs` if you want all of them removed.
+`--audio-lang` keeps only the listed languages (ISO 639-2/B codes: `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **The flag acts only as a filter — it does not reorder tracks.** Kept audio tracks preserve the source file's order; the player's default track will therefore be the first track *from the source file* that matches one of the listed languages. Subtitles are **not** filtered by this flag — use `--no-subs` if you want all of them removed.
 
 ```bash
-# English VO + French dub, English as default track
+# Keep English + French (output order follows the source file, not the order
+# listed here)
 ./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-
-# Same film, French as default
-./adaptive-encoder "film.mkv" --audio-lang "fre,eng"
 
 # Original English VO only (all other tracks stripped)
 ./adaptive-encoder "film.mkv" --audio-lang "eng"
 
-# Anime: Japanese as default, English and French as fallback
+# Anime: keep Japanese + English + French, source order preserved
 ./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
 ```
 
+> 💡 To reorder tracks or change the default track, do it as a post-processing step with `mkvmerge` (`--default-track-flag`) or `mkvpropedit`.
+
 #### Downmix heavy multichannel tracks
 
-`--downmix-audio` automatically picks the target based on the source channel count. **Re-encoding is mandatory** (you cannot stream-copy a downmix). The codec used is **AC3** (Dolby Digital, maximum compatibility).
+`--downmix-audio` is **conditional**: it only re-encodes tracks that actually need to be downmixed (8 channels or more). Tracks already in 5.1, stereo or mono remain **stream-copied bit-perfect** (original codec preserved) as long as `--normalize-audio` is not also active.
 
-| Source detected | Output target | AC3 bitrate |
+| Source detected | With `--downmix-audio` alone | With `--downmix-audio` + `--normalize-audio` |
 |---|---|---|
-| Atmos / TrueHD Atmos / DTS:X | 5.1 | 640 kbps |
-| 7.1 (8 channels) | 5.1 | 640 kbps |
-| 5.1 (6 channels) | 5.1 (re-encoded) | 640 kbps |
-| Stereo / mono | unchanged | 192 kbps |
+| Atmos / TrueHD Atmos / DTS:X (8+ channels) | **5.1 AC3 640 kbps** (re-encoded) | 5.1 AC3 640 kbps |
+| 7.1 (8 channels) | **5.1 AC3 640 kbps** (re-encoded) | 5.1 AC3 640 kbps |
+| 5.1 (6 channels) | **stream-copied** (original codec) | 5.1 AC3 640 kbps |
+| Stereo (2 channels) | **stream-copied** (original codec) | Stereo AC3 192 kbps |
+| Mono (1 channel) | **stream-copied** (original codec) | Mono AC3 96 kbps |
+
+> ℹ️ Atmos in EAC3 JOC is typically delivered on a 5.1 base (6 channels) — the tool detects it as 5.1 and **stream-copies** it (preserving the Atmos metadata). Only Atmos in TrueHD (7.1.x base → 8 reported channels) triggers the downmix to 5.1 AC3.
 
 ```bash
-# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps
+# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps (already-5.1 or stereo tracks stay intact)
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
 ```
 
-> ⚠️ **To answer "how do I get specifically 5.1 AC3 at 640 kbps?":** that's exactly what `--downmix-audio` produces on a 7.1 or Atmos source. 640 kbps isn't configurable on the CLI — it's the fixed value the tool uses for 5.1 (and 192 kbps for stereo). If you need a different bitrate (e.g. 448 kbps), a different codec (EAC3, AAC, Opus), or want to force stereo output (the `--downmix-audio` flag always targets 5.1 from 7.1+ sources), do it as a post-processing step with ffmpeg.
+> ⚠️ **To answer "how do I get specifically 5.1 AC3 at 640 kbps?":** that's exactly what `--downmix-audio` produces on a 7.1 or TrueHD Atmos source. 640 kbps isn't configurable on the CLI — it's the fixed value the tool uses for 5.1 (192 kbps for stereo, 96 kbps for mono). If you want to **force AC3 re-encoding even on an already-5.1 source** (e.g. to normalize loudness and have a uniform bitrate across the library), combine with `--normalize-audio two-pass`.
+>
+> If you need a different bitrate (e.g. 448 kbps), a different codec (EAC3, AAC, Opus), or want to force stereo output (the `--downmix-audio` flag always targets 5.1 from 7.1+ sources), do it as a post-processing step with ffmpeg.
 
 #### EBU R128 normalization (loudness)
 
-`--normalize-audio` applies loudness normalization to all kept audio tracks. **It mandatorily enables re-encoding** to AC3 → you lose bit-perfect original audio (same bitrates as `--downmix-audio`: 640 kbps for 5.1, 192 kbps for stereo).
+`--normalize-audio` applies loudness normalization to all kept audio tracks. **It mandatorily enables re-encoding** to AC3 → you lose bit-perfect original audio. AC3 bitrates: 640 kbps for 5.1, 192 kbps for stereo, **96 kbps for mono**.
 
 Two modes:
 
