@@ -104,7 +104,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎞️ **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte (sauf si normalisation ou downmix actif)
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Résolutions** — 480p à 8K
-- 📦 **Binaire unique** — `ffmpeg` et `ffprobe` intégrés sur les trois plateformes. `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** pour activer le Dolby Vision, le HDR10+ et le remuxage MKV (voir ci-dessous).
+- 📦 **Binaire unique** — `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont inclus dans le zip sur **toutes les plateformes** — extrayez tout le zip et gardez les fichiers dans le même dossier que le binaire.
 
 ---
 
@@ -113,7 +113,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 | Plateforme | Statut | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supporté | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD. **`dovi_tool`, `hdr10plus_tool` et `mkvmerge` à déposer manuellement** |
+| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD. Tous les outils inclus dans le zip — extrayez tout et gardez les fichiers ensemble. |
 | 🍎 macOS (Apple Silicon) | ✅ Supporté | M1, M2, M3 — binaire natif arm64 |
 
 ---
@@ -130,17 +130,13 @@ Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du tem
 
 ## ⚙️ Installation et prérequis
 
-`ffmpeg` et `ffprobe` sont intégrés dans le binaire sur toutes les plateformes.
+`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont inclus dans le zip sur toutes les plateformes.
 
-> ⚠️ **Windows — `dovi_tool`, `hdr10plus_tool` et `mkvmerge` à déposer manuellement**
+> ℹ️ **Windows — tous les outils sont inclus dans le zip**
 >
-> Sur Windows, ces trois outils ne sont pas fonctionnels dans le binaire. Téléchargez les exécutables et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers :
+> `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` sont inclus directement dans le zip aux côtés d'`adaptive-encoder.exe`. Extrayez **tout le contenu** du zip dans le même dossier — aucun téléchargement supplémentaire requis.
 >
-> - **`dovi_tool.exe`** → [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
-> - **`hdr10plus_tool.exe`** → [https://github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases)
-> - **`mkvmerge.exe`** → [https://mkvtoolnix.download](https://mkvtoolnix.download) (inclus dans MKVToolNix — prenez l'installeur ou l'archive portable)
->
-> Sans ces fichiers, le Dolby Vision, le HDR10+ et le remuxage MKV sont silencieusement ignorés ou échouent.
+> **Si le Dolby Vision ou le HDR10+ ne fonctionne toujours pas :** vérifiez que vous avez bien extrait *tous* les fichiers du zip (pas seulement l'`.exe`). Les outils doivent être dans le même dossier qu'`adaptive-encoder.exe`.
 
 ### Premier lancement — macOS uniquement
 
@@ -159,7 +155,7 @@ Après ça, macOS ne vous avertira plus jamais pour ce fichier.
 
 ### 🪟 Windows — étape par étape
 
-**1. Placez `adaptive-encoder.exe` dans le dossier qui contient votre vidéo.**
+**1. Extrayez tout le contenu du zip dans un dossier, puis placez votre vidéo dans ce même dossier** (ou notez son chemin complet).
 
 **2. Ouvrez PowerShell *dans ce dossier*.** Maintenez `Shift` puis clic droit dans une zone vide du dossier → **"Ouvrir la fenêtre PowerShell ici"**.
 
@@ -215,7 +211,7 @@ chmod +x ./adaptive-encoder
 
 ### 🪟 Windows — PowerShell (recommandé)
 
-**1. Placez `adaptive-encoder.exe` dans le dossier qui contient vos vidéos.**
+**1. Extrayez tout le zip dans le dossier qui contient vos vidéos.**
 
 **2. Ouvrez PowerShell dans ce dossier** (`Shift` + clic droit → "Ouvrir la fenêtre PowerShell ici"). Vérifiez le prompt `PS C:\...>`.
 
@@ -465,7 +461,7 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 #### Plafonner le débit avec VBV
 
-**`--vbv` — Plafond adaptatif automatique** : calibre le débit max selon la résolution effective post-crop (~7 Mbps en 720p, ~12 Mbps en 1080p, ~17 Mbps en 1440p, ~28 Mbps en 4K). Borné entre **2.5 Mbps et 35 Mbps** (plancher pour éviter de tuer la qualité sur SD/360p, plafond pour rester compatible avec les players grand public). Recommandé si vous voulez un plafond raisonnable sans réfléchir :
+**`--vbv` — Plafond adaptatif automatique** : calibre le débit max selon la résolution effective post-crop (~7 Mbps en 720p, ~12 Mbps en 1080p, ~17 Mbps en 1440p, ~28 Mbps en 4K). Borné entre **2.5 Mbps et 35 Mbps**. Recommandé si vous voulez un plafond raisonnable sans réfléchir :
 
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
@@ -483,49 +479,43 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 > ℹ️ **Interaction `--vbv` / `--max-bitrate` :** si vous passez `--max-bitrate`, sa valeur prime et le calcul automatique de `--vbv` est ignoré. Il n'est donc pas utile de combiner les deux flags.
 
-**`--vbv-bufsize` — Taille du buffer VBV en kbits** : par défaut, le buffer = **1.5× max bitrate**. Élargir le buffer permet des pics plus longs (lisse les pompages sur contenu très variable) :
+**`--vbv-bufsize` — Taille du buffer VBV en kbits** : par défaut, le buffer = **1.5× max bitrate**. Élargir le buffer permet des pics plus longs :
 
 ```bash
-# Buffer 1.5× du plafond — comportement par défaut, donné pour référence
-./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 22500
-
 # Buffer 2× — pour scènes très variables (sports, action rapide, feux d'artifice)
 ./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
-
-# Buffer 3× — limite des spécifications de player typiques (au-delà : risques d'incompatibilité)
-./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
 ```
 
 #### Préréglages d'encodage
 
-**Encodage plus rapide** — bascule sur `slower` au lieu de `veryslow` (env. 2× plus rapide, qualité ~1-2 % en dessous, recommandé pour les gros lots) :
+**Encodage plus rapide** — bascule sur `slower` au lieu de `veryslow` (env. 2× plus rapide, qualité ~1-2 % en dessous) :
 ```bash
 ./adaptive-encoder "film.mkv" --no-veryslow
 ```
 
-**Tune `grain` forcé** — préserve la structure du grain (psy-rd plus élevé, deblock désactivé). Pour pellicules 35mm/16mm scannées :
+**Tune `grain` forcé** — préserve la structure du grain. Pour pellicules 35mm/16mm scannées :
 ```bash
 ./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
 ```
 
-**Tune `animation` forcé** — optimise pour les zones plates et les bords nets. Pour dessins animés, anime, motion design :
+**Tune `animation` forcé** — optimise pour les zones plates et les bords nets :
 ```bash
 ./adaptive-encoder "anime.mkv" --force-tune animation
 ```
 
 ### 📺 Dolby Vision & HDR
 
-**Forcer la sortie en HDR10 même si la source est Dolby Vision** — utile pour la compatibilité avec les lecteurs qui buguent sur le DV :
+**Forcer la sortie en HDR10 même si la source est Dolby Vision :**
 ```bash
 ./adaptive-encoder "uhd_dolbyvision.mkv" --no-dolby-vision
 ```
 
-**Refuser la conversion Profil 7 → 8.1** — préserve le DV uniquement si le profil source est reproductible nativement, sinon sort en HDR10 :
+**Refuser la conversion Profil 7 → 8.1 :**
 ```bash
 ./adaptive-encoder "blu-ray_dv_profil7.mkv" --preserve-dv-profile
 ```
 
-**Rediriger les fichiers temporaires DV** — crucial sur Linux avec `/tmp` en tmpfs (limité à la RAM) ou si la partition système est petite :
+**Rediriger les fichiers temporaires DV :**
 ```bash
 # Linux
 ./adaptive-encoder "film_dv.mkv" --temp-dir /mnt/ssd/temp
@@ -537,198 +527,64 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 .\adaptive-encoder.exe "film_dv.mkv" --temp-dir D:\temp
 ```
 
-**Ignorer HDR10+ même si présent** — utile si votre TV ne gère que HDR10 et que vous voulez éviter les SEI inutiles :
+**Ignorer HDR10+ même si présent :**
 ```bash
 ./adaptive-encoder "film_hdr10plus.mkv" --no-hdr10plus
 ```
 
 ### 🌑 Réduction du bruit
 
-> ℹ️ **Comportement par défaut :** sans aucun flag denoise, l'engine est `auto` et la force est calibrée automatiquement à partir du bruit et du grain mesurés. Si la source est très propre (score combiné < 0.08), **aucun filtre n'est appliqué** — vous récupérez votre fichier sans traitement. Sur une source bruitée ou granuleuse, l'auto choisit l'engine et la force adaptés. **Choisir un moteur explicitement** (`--denoise-engine nlmeans/bm3d/hybrid`) **garantit que le débruitage est toujours appliqué**, même sur une source propre.
+> ℹ️ **Comportement par défaut :** sans aucun flag denoise, l'engine est `auto` et la force est calibrée automatiquement. Si le score combiné est sous ~0.08, **aucun filtre n'est appliqué**. **Choisir un moteur explicitement** (`--denoise-engine nlmeans/bm3d/hybrid`) **garantit que le débruitage est toujours appliqué**, même sur une source propre.
 
-**Mode auto par défaut (aucun flag denoise)** — comportement implicite, l'outil décide tout. `auto` sélectionne intelligemment :
-
-| Profil bruit/grain détecté | Engine choisi | Pourquoi |
-|---|---|---|
-| Bruit stationnaire dominant (ratio bruit/grain > 1.3) | **bm3d** | Idéal sur bruit capteur / numérique propre |
-| Grain dominant (ratio < 0.77) | **hybrid** (hqdn3d + nlmeans) | Adapté au grain film 35mm/16mm |
-| Équilibré ou faible force | **nlmeans** | Rapide et général |
-
-```bash
-# Tout en auto — l'outil mesure, choisit l'engine et la force
-./adaptive-encoder "film.mkv"
-```
-
-**Désactiver totalement le débruitage** — pour les archives, sources film, ou tout contenu où la fidélité au master prime sur la propreté :
+**Désactiver totalement le débruitage :**
 ```bash
 ./adaptive-encoder "film_35mm.mkv" --no-denoise
 ```
 
-**Forcer une force de débruitage spécifique** — override le calibrage automatique. **Toute valeur > 0 est toujours appliquée**, même sur une source que l'auto aurait classée comme « trop propre pour denoise » :
+**Forcer une force de débruitage spécifique :**
 ```bash
-# Débruitage léger sur source numérique propre (l'auto aurait skip ce filtre)
 ./adaptive-encoder "source_numerique.mkv" --denoise-strength 0.2
-
-# Débruitage fort sur capture VHS / SD bruitée
 ./adaptive-encoder "vhs_rip.mkv" --denoise-strength 0.8
 ```
 
-**Mode préservation du grain** — débruite 40 % moins fort, conserve une partie de la texture (compromis archive ↔ propreté) :
+**Mode préservation du grain :**
 ```bash
 ./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
 ```
 
-**Forcer un moteur spécifique** — bypass la sélection auto. Le moteur que vous choisissez est **toujours appliqué**, même sur une source que l'auto aurait classée « trop propre ». Si ffmpeg ne contient pas l'engine demandé, fallback vers un engine disponible avec avertissement visible :
+**Forcer un moteur spécifique :**
 ```bash
-# bm3d — qualité max sur bruit stationnaire (capteur numérique, étalonnage moderne)
 ./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
-
-# nlmeans — rapide et général, force la sélection sans laisser l'auto décider
 ./adaptive-encoder "film.mkv" --denoise-engine nlmeans
-
-# hybrid — chaîne hqdn3d + nlmeans, idéal pour sources mixtes (SD/HD upscalés)
 ./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
-
-# Repasser explicitement en auto (équivalent à ne rien passer)
-./adaptive-encoder "film.mkv" --denoise-engine auto
 ```
-
-> 💡 **Comment vérifier ce qui a été appliqué :** la ligne `denoise:` dans `▶ Selecting parameters…` affiche un préfixe `auto→` si la sélection vient de l'auto. Exemple :
-> - `denoise: moderate (auto→hybrid, strength 35%)` → auto a choisi hybrid
-> - `denoise: moderate (hybrid, strength 35%)` → vous avez forcé hybrid via `--denoise-engine hybrid`
 
 ### 🔊 Audio & sous-titres
 
-> ℹ️ **Comportement par défaut :** sans aucun flag audio, **toutes les pistes audio sont copiées bit-perfect** (stream copy) — aucun ré-encodage, aucune perte. Toutes les pistes de sous-titres aussi. Activer `--normalize-audio` ou `--downmix-audio` force le ré-encodage en AC3 et fait perdre la copie bit-perfect.
-
-**Supprimer toutes les pistes audio** — produit un master vidéo seul, utile avant un remux audio externe ou pour archiver une « image clean » :
+**Supprimer toutes les pistes audio :**
 ```bash
 ./adaptive-encoder "film.mkv" --no-audio
 ```
 
-**Supprimer tous les sous-titres** — retire toutes les pistes SRT / PGS / ASS / VobSub de la sortie :
+**Filtrer par langue :**
 ```bash
-./adaptive-encoder "film.mkv" --no-subs
-```
-
-#### Filtrer les pistes audio par langue
-
-`--audio-lang` ne garde que les langues listées (codes ISO 639-2/B : `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **Le flag agit uniquement comme un filtre — il ne réordonne pas les pistes.** Les pistes audio conservées gardent l'ordre du fichier source ; la piste par défaut du player sera donc la première piste *du fichier source* qui correspond à une des langues listées. Les sous-titres ne sont **pas** filtrés par ce flag — utilisez `--no-subs` si vous voulez tout retirer.
-
-```bash
-# Garde anglais + français (l'ordre dans la sortie suit le fichier source,
-# pas l'ordre listé ici)
 ./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-
-# Uniquement la VO anglaise (toutes les autres pistes supprimées)
-./adaptive-encoder "film.mkv" --audio-lang "eng"
-
-# Anime : garde japonais + anglais + français, ordre source préservé
-./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
 ```
 
-> 💡 Pour réordonner les pistes ou changer la piste par défaut, c'est à faire en post-traitement avec `mkvmerge` (`--default-track-flag`) ou `mkvpropedit`.
-
-#### Downmixer les pistes multicanal lourdes
-
-`--downmix-audio` est **conditionnel** : il ne ré-encode que les pistes qui ont effectivement besoin d'être downmixées (8 canaux ou plus). Les pistes 5.1, stéréo et mono restent **stream-copiées bit-perfect** (codec d'origine préservé) tant que `--normalize-audio` n'est pas aussi actif.
-
-| Source détectée | Cible avec `--downmix-audio` seul | Avec `--downmix-audio` + `--normalize-audio` |
-|---|---|---|
-| Atmos / TrueHD Atmos / DTS:X (8+ canaux) | **5.1 AC3 640 kbps** (ré-encodé) | 5.1 AC3 640 kbps |
-| 7.1 (8 canaux) | **5.1 AC3 640 kbps** (ré-encodé) | 5.1 AC3 640 kbps |
-| 5.1 (6 canaux) | **stream-copiée** (codec d'origine) | 5.1 AC3 640 kbps |
-| Stéréo (2 canaux) | **stream-copiée** (codec d'origine) | Stéréo AC3 192 kbps |
-| Mono (1 canal) | **stream-copiée** (codec d'origine) | Mono AC3 96 kbps |
-
-> ℹ️ Atmos en EAC3 JOC est typiquement délivré sur une base 5.1 (6 canaux) — l'outil le détecte comme 5.1 et le **stream-copie** (préservant les métadonnées Atmos). Seul Atmos en TrueHD (base 7.1.x → 8 canaux reportés) déclenche le downmix vers 5.1 AC3.
-
+**Downmix Atmos / 7.1 → 5.1 AC3 640 kbps :**
 ```bash
-# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps (les pistes 5.1 ou stéréo restent intactes)
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
 ```
 
-> ⚠️ **Pour répondre à la question « comment obtenir spécifiquement 5.1 AC3 à 640 kbps ? » :** c'est exactement ce que produit `--downmix-audio` sur une source 7.1 ou TrueHD Atmos. Le 640 kbps n'est pas configurable en CLI — c'est la valeur fixe utilisée par l'outil pour le 5.1 (192 kbps pour la stéréo, 96 kbps pour le mono). Si vous voulez **forcer le ré-encodage AC3 même sur une source déjà en 5.1** (par exemple pour normaliser la loudness et avoir un débit identique sur toute la bibliothèque), combinez avec `--normalize-audio two-pass`.
->
-> Si vous avez besoin d'un autre débit (ex. 448 kbps), d'un autre codec (EAC3, AAC, Opus), ou de forcer la sortie en stéréo (le flag `--downmix-audio` cible toujours le 5.1 sur source 7.1+), c'est à faire en post-traitement avec ffmpeg.
-
-#### Normalisation EBU R128 (loudness)
-
-`--normalize-audio` applique une normalisation de loudness aux pistes audio conservées. **Active obligatoirement le ré-encodage** en AC3 → vous perdez l'audio bit-perfect d'origine. Débits AC3 : 640 kbps pour 5.1, 192 kbps pour stéréo, **96 kbps pour mono**.
-
-Deux modes :
-
+**Normalisation EBU R128 :**
 ```bash
-# Single-pass — rapide (1 passe ffmpeg), normalisation dynamique
-# Légèrement moins précise sur les variations de loudness scène par scène
-./adaptive-encoder "film.mkv" --normalize-audio single-pass
-
-# Two-pass — recommandé : passe de mesure puis correction linéaire
-# Plus lent (mesure ~= durée du film en plus), mais précis
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass
-```
-
-**Cible LUFS personnalisée** — défaut `-16 LUFS` (TV / streaming). Quelques cibles courantes :
-
-```bash
-# Broadcast EBU R128 strict (TV européenne : BBC, ARTE, France 2, etc.)
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
-
-# ATSC A/85 (broadcast US)
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -24.0
-
-# Streaming type Spotify / YouTube
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
-
-# Apple Music / Apple TV (équivalent au défaut)
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -16.0
 ```
 
-#### Combinaisons audio courantes
-
-**Downmix + normalisation (home cinéma 5.1 cohérent)** — sortie 5.1 AC3 640 kbps avec loudness alignée. La combinaison la plus utilisée pour une bibliothèque destinée à un AV receiver 5.1 :
-
+**Downmix + normalisation (home cinéma 5.1 cohérent) :**
 ```bash
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio --normalize-audio two-pass
-```
-
-**Bibliothèque 5.1 broadcast EBU R128 complète** — filtre langues + downmix + normalisation -23 LUFS :
-
-```bash
-./adaptive-encoder "film_atmos.mkv" \
-  --audio-lang "fre,eng" \
-  --downmix-audio \
-  --normalize-audio two-pass \
-  --normalize-audio-target -23.0
-```
-
-**Préservation maximale audio** — toutes les pistes copiées bit-perfect, aucune transformation (comportement par défaut, donné ici pour référence) :
-
-```bash
-./adaptive-encoder "film.mkv"
-```
-
-**Filtrer langues mais préserver le bit-perfect** — supprime les doublages indésirables tout en gardant les pistes conservées en copie pure :
-
-```bash
-./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-```
-
-### 🖥️ Système
-
-**Mode verbose — voir le détail de l'analyse adaptative** :
-```bash
-./adaptive-encoder "film.mkv" --verbose
-```
-
-**Dry-run — analyser et afficher la commande sans encoder** :
-```bash
-./adaptive-encoder "film.mkv" --dry-run
-```
-
-**Spécifier un fichier de sortie personnalisé** :
-```bash
-./adaptive-encoder "input.mkv" -o "/mnt/library/Movies/Inception (2010).mkv"
 ```
 
 ---
@@ -736,7 +592,6 @@ Deux modes :
 ### 🎯 Combinaisons utiles (scénarios complets)
 
 **📼 Archive 35mm grenu, fidélité au master maximale**
-Préserve la structure du grain, aucun débruitage, tune adapté :
 ```bash
 ./adaptive-encoder "western_1970.mkv" \
   --no-denoise \
@@ -745,7 +600,6 @@ Préserve la structure du grain, aucun débruitage, tune adapté :
 ```
 
 **🎌 Anime / dessin animé optimisé**
-Tune animation, débruitage actif (l'anime moderne a peu de grain) :
 ```bash
 ./adaptive-encoder "anime_serie_s01e01.mkv" \
   --force-tune animation \
@@ -753,7 +607,6 @@ Tune animation, débruitage actif (l'anime moderne a peu de grain) :
 ```
 
 **💾 Réduction de taille agressive pour serveur de streaming personnel**
-CRF plus haut + plafond bitrate + downmix + langues filtrées :
 ```bash
 ./adaptive-encoder "film.mkv" \
   --base-crf 24.0 \
@@ -764,7 +617,6 @@ CRF plus haut + plafond bitrate + downmix + langues filtrées :
 ```
 
 **📡 Bibliothèque hétérogène avec audio normalisé**
-Two-pass loudness à -16 LUFS, filtres langue, plafond VBV adaptatif :
 ```bash
 ./adaptive-encoder "film.mkv" \
   --vbv \
@@ -773,7 +625,6 @@ Two-pass loudness à -16 LUFS, filtres langue, plafond VBV adaptatif :
 ```
 
 **📺 Blu-ray UHD Dolby Vision Profil 7 — qualité maximale, A/V parfait**
-Force 23.976 pour resync DV, temp dir externe, base-crf bas :
 ```bash
 ./adaptive-encoder "uhd_dv_profil7.mkv" \
   --force-fps 23.976 \
@@ -781,8 +632,7 @@ Force 23.976 pour resync DV, temp dir externe, base-crf bas :
   --base-crf 20.0
 ```
 
-**📺 Conversion 4K HDR → 1080p SDR pour TV ancienne avec loudness contrôlé**
-Downscale + tonemap + downmix + normalisation broadcast :
+**📺 Conversion 4K HDR → 1080p SDR pour TV ancienne**
 ```bash
 ./adaptive-encoder "4k_hdr10plus.mkv" \
   --downscale-1080p-sdr \
@@ -791,23 +641,12 @@ Downscale + tonemap + downmix + normalisation broadcast :
   --normalize-audio-target -23.0
 ```
 
-**🧪 Test avant gros batch — vérifier la détection sans encoder**
-Dry-run + verbose pour voir l'analyse complète :
+**🧪 Test avant gros batch**
 ```bash
 ./adaptive-encoder "echantillon.mkv" --dry-run --verbose
 ```
 
-**⚡ Encodage rapide d'un gros lot, qualité raisonnable**
-Slower au lieu de veryslow, CRF légèrement plus haut :
-```bash
-./adaptive-encoder "film.mkv" \
-  --no-veryslow \
-  --base-crf 23.0 \
-  --vbv
-```
-
 **🎞️ Capture VHS/DVD restaurée — débruitage agressif**
-bm3d + force manuelle + tune grain pour ce qui reste de texture :
 ```bash
 ./adaptive-encoder "vhs_concert.mkv" \
   --denoise-engine bm3d \
@@ -823,7 +662,7 @@ bm3d + force manuelle + tune grain pour ce qui reste de texture :
 Vous êtes probablement dans le mauvais dossier, ou `adaptive-encoder.exe` n'est pas dans le dossier courant. Vérifiez avec `pwd` (PowerShell) ou `cd` (CMD) que vous êtes au bon endroit, et avec `ls` / `dir` que le `.exe` est bien là.
 
 **Le Dolby Vision ou le HDR10+ ne fonctionne pas sur Windows.**
-Sur Windows, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` ne sont pas fonctionnels dans le binaire. Téléchargez les trois exécutables et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Sans eux, le DV et le HDR10+ sont silencieusement ignorés et la sortie tombe en HDR10 uniquement.
+Vérifiez que vous avez bien extrait *tous* les fichiers du zip — pas seulement l'`adaptive-encoder.exe`. `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` sont inclus dans le zip et doivent se trouver dans le même dossier que l'`.exe`. Si un fichier manque, le DV et le HDR10+ sont ignorés silencieusement et la sortie tombe en HDR10 uniquement.
 
 **Mes fichiers `_adaptive.mkv` sont re-traités à chaque lancement du batch.**
 Utilisez la version des commandes batch avec `-Exclude *_adaptive.mkv` (PowerShell) ou la boucle bash qui filtre `*_adaptive.mkv` (Linux/macOS). Voir la section "Encoder un dossier complet" ci-dessus.
@@ -835,52 +674,44 @@ Lancez d'abord `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` dans
 Vous êtes dans CMD, pas PowerShell. Le prompt doit commencer par `PS`. Tapez `powershell` puis Entrée pour basculer.
 
 **L'encodage prend des heures par film — c'est normal ?**
-Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez `--no-veryslow` pour basculer sur `slower` (env. 2× plus rapide) ou `--no-veryslow --base-crf 24` pour réduire encore.
+Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez `--no-veryslow` pour basculer sur `slower` (env. 2× plus rapide).
 
 **Espace disque saturé pendant l'encodage Dolby Vision.**
-Les fichiers temporaires DV peuvent être lourds. Utilisez `--temp-dir D:\temp` (Windows) ou `--temp-dir /chemin/disque-libre` (Linux/macOS) pour les rediriger vers un disque avec plus d'espace.
+Utilisez `--temp-dir D:\temp` (Windows) ou `--temp-dir /chemin/disque-libre` (Linux/macOS) pour rediriger les fichiers temporaires.
 
 **J'ai forcé `--denoise-strength` ou `--denoise-engine` et l'outil semble ignorer mon choix.**
-Vérifiez la ligne `denoise:` affichée dans `▶ Selecting parameters…` :
-- Préfixe `auto→` = le mode auto a choisi pour vous (vous n'avez pas forcé)
-- Pas de préfixe = votre choix est appliqué tel quel
-- `disabled` = vous avez passé `--no-denoise`
-
-Forcer `--denoise-engine` avec une valeur explicite (`nlmeans`, `bm3d`, `hybrid`) garantit que le débruitage est appliqué, même sur une source propre. Seul le mode `auto` peut décider de ne rien appliquer.
+Vérifiez la ligne `denoise:` affichée dans `▶ Selecting parameters…` : préfixe `auto→` = le mode auto a choisi pour vous ; pas de préfixe = votre choix est appliqué ; `disabled` = vous avez passé `--no-denoise`.
 
 ---
 
 ## ❓ FAQ
 
 **Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). `ffmpeg` et `ffprobe` sont intégrés dans le binaire sur les trois plateformes. `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont intégrés sur Linux et macOS. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` et placez-les dans le même dossier qu'`adaptive-encoder.exe`** — aucune installation, juste déposer les fichiers.
+Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` et `mkvmerge` sont inclus dans le zip sur toutes les plateformes — extrayez tout et gardez les fichiers dans le même dossier.
 
 **C'est seulement pour la 4K ?**
 Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size`, preset) sont adaptés automatiquement à la résolution effective.
 
 **Dois-je télécharger des outils séparément ?**
-Sur Linux et macOS : non, tout est intégré. Sur Windows : `ffmpeg` et `ffprobe` sont intégrés, mais **`dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe` doivent être téléchargés et placés dans le même dossier qu'`adaptive-encoder.exe`** — pas d'installation, juste déposer les fichiers.
+Non. Tout est inclus dans le zip sur toutes les plateformes — extrayez le zip et gardez tous les fichiers dans le même dossier. Aucun téléchargement supplémentaire.
 
 **Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
-Oui, sous réserve que `dovi_tool`, `hdr10plus_tool` et `mkvmerge` soient disponibles. Sur Linux et macOS, tout est intégré et fonctionne sans configuration. **Sur Windows, téléchargez `dovi_tool.exe`, `hdr10plus_tool.exe` et `mkvmerge.exe`** et placez-les dans le même dossier qu'`adaptive-encoder.exe` — aucune installation, juste déposer les fichiers. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées sont préservées et coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40. Le choix se fait côté lecteur/afficheur selon ce qu'il supporte.
+Oui. Sur toutes les plateformes, les outils sont inclus dans le zip — extrayez tout le zip et gardez les fichiers dans le même dossier. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées coexistent dans le bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40.
 
 **La conversion Profil 7 → 8.1 fonctionne ?**
-Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
+Oui, c'est le comportement par défaut. Si vous préférez sortir en HDR10 plutôt qu'accepter la conversion, utilisez `--preserve-dv-profile`.
 
 **Le débruitage est-il actif par défaut ? Mon grain va-t-il être touché ?**
-Le débruitage **adaptatif** est activé par défaut, avec l'engine en mode `auto`. La force est auto-calibrée à partir des métriques de bruit et de grain : si le score combiné est sous ~0.08, aucun filtre n'est appliqué. Sur une source propre (Blu-ray récent sans grain marqué), vous n'aurez aucun traitement. Sur un film 35mm très grenu, vous aurez un débruitage modéré avec l'engine `hybrid` (sélectionné automatiquement parce que le grain domine). **Si vous choisissez un moteur explicitement** (`--denoise-engine nlmeans/bm3d/hybrid`), le débruitage est toujours appliqué, même sur une source propre — seul `auto` peut décider de ne rien faire. Pour garantir zéro filtre quelle que soit la source, utilisez `--no-denoise`. Pour un compromis (préserver une partie de la texture du grain), utilisez `--denoise-preserve-grain`.
-
-**Comment fonctionne le mode `auto` de `--denoise-engine` ?**
-En mode auto (le défaut), l'outil regarde le ratio bruit/grain mesuré sur la source et la force calculée, puis choisit l'engine optimal : **bm3d** quand le bruit stationnaire domine (sources numériques modernes, ratio bruit/grain > 1.3), **hybrid** (hqdn3d + nlmeans) quand le grain domine (film 35mm/16mm, ratio < 0.77), **nlmeans** dans les cas équilibrés ou à faible force. `auto` est le seul mode qui peut décider de ne rien appliquer si la source est très propre. Si vous forcez `--denoise-engine` avec une valeur explicite, le débruitage est toujours appliqué (force minimale « light » si l'analyse ne détecte rien de significatif). Si l'engine demandé n'est pas disponible dans le ffmpeg embarqué, l'outil fallback automatiquement vers un engine compatible avec un avertissement visible (jamais d'échec silencieux).
+Le débruitage **adaptatif** est activé par défaut, avec l'engine en mode `auto`. Si le score combiné est sous ~0.08, aucun filtre n'est appliqué. Pour garantir zéro filtre, utilisez `--no-denoise`. Pour un compromis, utilisez `--denoise-preserve-grain`.
 
 **Quand utiliser `--normalize-audio` ?**
-Surtout pour les bibliothèques hétérogènes (films de décennies différentes, mix de sources, doublages enregistrés à des niveaux variables). Le mode `two-pass` mesure d'abord le loudness intégré de tout le fichier puis applique une correction linéaire — c'est la même approche que Netflix/Apple/YouTube utilisent côté plateforme. La cible par défaut `-16 LUFS` est calibrée TV/streaming ; pour la diffusion broadcast EBU R128 stricte, utilisez `-23.0`. Important : activer la normalisation force le ré-encodage audio (AC3), donc vous perdez l'audio bit-perfect d'origine. Sans `--normalize-audio`, les pistes audio sont copiées en bit-perfect.
+Surtout pour les bibliothèques hétérogènes. Le mode `two-pass` est recommandé. La cible par défaut `-16 LUFS` est calibrée TV/streaming ; pour EBU R128 broadcast strict, utilisez `-23.0`. Important : activer la normalisation force le ré-encodage audio en AC3.
 
 **Pourquoi mes fichiers sont-ils plus lourds qu'avec d'autres encodeurs ?**
-Choix de conception délibéré — préservation du détail et des métadonnées HDR. Pour limiter la taille du fichier, utilisez `--vbv` (active un plafond adapté à la résolution), `--max-bitrate` (force un plafond manuel), ou augmentez `--base-crf`.
+Choix de conception délibéré — préservation du détail et des métadonnées HDR. Pour limiter la taille, utilisez `--vbv`, `--max-bitrate`, ou augmentez `--base-crf`.
 
 **Vitesse d'encodage ?**
-L'outil utilise les préréglages x265 `slower` ou `veryslow` selon la complexité du contenu — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`. Note : le mode `--normalize-audio two-pass` ajoute une passe de mesure audio (proportionnelle à la durée du film, sans encodage vidéo).
+L'outil utilise les préréglages x265 `slower` ou `veryslow` selon la complexité du contenu. Pour un encodage plus rapide, utilisez `--no-veryslow`.
 
 **Et si ça ne fonctionne pas sur mes fichiers ?**
 Ouvrez une issue sur GitHub ou posez la question sur Discord — avec plaisir.
@@ -959,7 +790,7 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10, HD
 
 Many users mistakenly think this tool is only for 4K. **It's not.** Adaptive Video Encoder shines particularly well on 1080p Blu-ray remuxes for 3 reasons:
 
-**1. x265 parameters finely tuned for 1080p.** The tool automatically adjusts block sizes (`ctu=32`, `qg-size=8`) on sub-1440p content, which tracks psy-visual detail better than the x265 defaults that were designed for 4K. On 1440p and above, it switches to the larger blocks (`ctu=64`, `qg-size=16`) expected at that scale.
+**1. x265 parameters finely tuned for 1080p.** The tool automatically adjusts block sizes (`ctu=32`, `qg-size=8`) on sub-1440p content, which tracks psy-visual detail better than the x265 defaults designed for 4K. On 1440p and above, it switches to the larger blocks (`ctu=64`, `qg-size=16`) expected at that scale.
 
 **2. Adaptive complex scene detection.** On a 1080p action film, fight scenes have radically different complexity than dialogue. Frame-by-frame analysis adjusts x265 parameters (preset, CRF, psy-rd, AQ-mode) accordingly, where generic encoders use the same settings start to finish.
 
@@ -987,16 +818,16 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🔍 **Frame-by-frame adaptive analysis** — measures noise, grain, spatial complexity, edge density, temporal activity, dark-pixel fraction
 - 🎚️ **x265 parameters tuned to the metrics** — preset (between `medium` and `veryslow`), CRF, psy-rd, psy-rdoq, aq-mode, aq-strength, deblock, SAO, ref, bframes, me, rdoq-level — all adjusted to the actual content
 - 📐 **Resolution-aware** — `ctu`, `qg-size` and VBV cap auto-tuned from effective pixels (post-crop)
-- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted via `dovi_tool`, preserved, reinjected. Profile 7 converted to 8.1 by default (compatible with most DV players). `--preserve-dv-profile` outputs HDR10 instead of accepting the conversion.
-- 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream via the x265 `dhdr10-info` parameter. DV and HDR10+ coexist in the same HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI.
+- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted via `dovi_tool`, preserved, reinjected. Profile 7 converted to 8.1 by default. `--preserve-dv-profile` outputs HDR10 instead of accepting the conversion.
+- 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream. DV and HDR10+ coexist in the same HEVC bitstream.
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
-- 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain. In `auto` mode (default), if the combined score is below threshold (~0.08), no filter is applied. Picking an engine explicitly (`nlmeans`, `bm3d`, `hybrid`) **guarantees denoising is always applied**, even on clean sources — only `auto` can decide to skip. `--denoise-preserve-grain` smooths only a fraction of the texture.
-- 🔊 **EBU R128 audio normalization** — `single-pass` mode (dynamic loudnorm) or `two-pass` (measure then linear correction — recommended). Configurable LUFS target.
+- 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain. In `auto` mode (default), if the combined score is below threshold (~0.08), no filter is applied. Picking an engine explicitly (`nlmeans`, `bm3d`, `hybrid`) **guarantees denoising is always applied**, even on clean sources.
+- 🔊 **EBU R128 audio normalization** — `single-pass` or `two-pass` (recommended). Configurable LUFS target.
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
 - 🎞️ **All audio and subtitle tracks** copied by default, zero loss (unless normalization or downmix active)
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K
-- 📦 **Single binary** — `ffmpeg` and `ffprobe` bundled on all three platforms. `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` and place them in the same folder as `adaptive-encoder.exe`** to enable Dolby Vision, HDR10+ and MKV remuxing (see below).
+- 📦 **Single binary** — `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are included in the zip on **all platforms** — extract the full zip and keep all files in the same folder as the binary.
 
 ---
 
@@ -1005,7 +836,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 | Platform | Status | Notes |
 |---|---|---|
 | 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Fedora 40+ |
-| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD. **`dovi_tool`, `hdr10plus_tool` and `mkvmerge` must be dropped manually** |
+| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD. All tools included in the zip — extract everything and keep files together. |
 | 🍎 macOS (Apple Silicon) | ✅ Supported | M1, M2, M3 — native arm64 binary |
 
 ---
@@ -1022,17 +853,13 @@ Adaptive Video Encoder is completely free to use. If it saved you time or improv
 
 ## ⚙️ Installation & requirements
 
-`ffmpeg` and `ffprobe` are bundled inside the binary on all platforms.
+`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are bundled in the zip on all platforms.
 
-> ⚠️ **Windows — `dovi_tool`, `hdr10plus_tool` and `mkvmerge` must be dropped manually**
+> ℹ️ **Windows — all tools are included in the zip**
 >
-> On Windows, these three tools are not functional inside the binary. Download the executables and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files:
+> `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` are included directly in the zip alongside `adaptive-encoder.exe`. Extract **all the contents** of the zip into the same folder — no additional downloads required.
 >
-> - **`dovi_tool.exe`** → [https://github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases)
-> - **`hdr10plus_tool.exe`** → [https://github.com/quietvoid/hdr10plus_tool/releases](https://github.com/quietvoid/hdr10plus_tool/releases)
-> - **`mkvmerge.exe`** → [https://mkvtoolnix.download](https://mkvtoolnix.download) (included in MKVToolNix — use the installer or portable archive)
->
-> Without these files, Dolby Vision, HDR10+ and MKV remuxing will silently fail or be skipped.
+> **If Dolby Vision or HDR10+ still doesn't work:** make sure you extracted *all* the files from the zip (not just the `.exe`). The tools must be in the same folder as `adaptive-encoder.exe`.
 
 ### First launch — macOS only
 
@@ -1051,7 +878,7 @@ After that, macOS will never warn about this file again.
 
 ### 🪟 Windows — step by step
 
-**1. Place `adaptive-encoder.exe` in the folder that contains your video.**
+**1. Extract all the zip contents into a folder, then place your video in that same folder** (or note its full path).
 
 **2. Open PowerShell *in that folder*.** Hold `Shift` and right-click in an empty area of the folder → **"Open PowerShell window here"**.
 
@@ -1103,15 +930,13 @@ chmod +x ./adaptive-encoder
 
 ## 🗂️ Batch encode an entire folder
 
-> ⚠️ **Gotcha to know:** the default output is named `<input>_adaptive.mkv`. Without precautions, re-running the script will reprocess already-encoded files in a loop (`film_adaptive.mkv` → `film_adaptive_adaptive.mkv`, etc.). **All commands below exclude `*_adaptive.mkv` files** to avoid this issue.
+> ⚠️ **Gotcha to know:** the default output is named `<input>_adaptive.mkv`. Without precautions, re-running the script will reprocess already-encoded files in a loop. **All commands below exclude `*_adaptive.mkv` files** to avoid this issue.
 
 ### 🪟 Windows — PowerShell (recommended)
 
-**1. Place `adaptive-encoder.exe` in the folder containing your videos.**
+**1. Extract all the zip contents into the folder containing your videos.**
 
 **2. Open PowerShell in that folder** (`Shift` + right-click → "Open PowerShell window here"). Confirm the `PS C:\...>` prompt.
-
-**3. Pick the command that matches your need:**
 
 **Current folder only:**
 ```powershell
@@ -1134,11 +959,10 @@ Get-ChildItem -Recurse -Include *.mkv,*.mp4,*.mov -Exclude *_adaptive.* | ForEac
 }
 ```
 
-> 💡 **If PowerShell refuses to launch the `.exe`** (execution policy), first run:
+> 💡 **If PowerShell refuses to launch the `.exe`**, first run:
 > ```powershell
 > Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 > ```
-> This only lasts for the current session.
 
 ### 🪟 Windows — CMD or .bat file
 
@@ -1172,7 +996,7 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 
 > 💡 **Before running on the whole library,** test with `--dry-run` on a single file first to verify Dolby Vision, HDR10+ and HDR are correctly detected.
 
-> 💡 **Load/duration:** a `veryslow` encode can take several hours per film. For a large library, run it overnight or use `--no-veryslow` to cap at `slower`.
+> 💡 **Load/duration:** a `veryslow` encode can take several hours per film. Use `--no-veryslow` to cap at `slower`.
 
 ---
 
@@ -1181,103 +1005,47 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 ```
 -h, --help                        Display this help message and exit
 -o, --output OUTPUT               Output video file (default: <input>_adaptive.mkv)
---auto-rename                     If the output file is locked by another process (open in a
-                                  player, scanned by antivirus, held by a stale ffmpeg, etc.),
-                                  automatically pick an alternative name (_v2, _v3, ...) instead
-                                  of aborting. Default: abort with a diagnostic message listing
-                                  common causes.
+--auto-rename                     If the output file is locked by another process, automatically
+                                  pick an alternative name (_v2, _v3, ...) instead of aborting.
 
 [ Video Settings ]
 --force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976).
-                                  Ensures perfect A/V sync during Dolby Vision remux.
 --max-samples MAX_SAMPLES         Max number of frames to sample for analysis
 --target-hours TARGET_HOURS       Fallback duration (h) if ffprobe cannot determine it
 --crop-samples CROP_SAMPLES       Number of time points for crop detection
 --no-crop-detect                  Disable automatic black bar detection
 --base-crf BASE_CRF               Shift the adaptive CRF baseline (default: 22.0).
-                                  Raise to reduce file size further; lower for
-                                  closer-to-remux quality.
 --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR via
                                   libplacebo (BT.2390) or zscale+tonemap=mobius fallback.
-                                  Output: BT.709 colors, TV range, 10-bit.
 
 [ Bitrate & Presets ]
---max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps). Useful for targeting
-                                  a specific file size.
+--max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps).
 --vbv-bufsize VBV_BUFSIZE         Optional VBV buffer size (kbits)
 --vbv                             Enable automatic VBV bitrate cap (off by default).
-                                  When enabled, max bitrate is calibrated on the
-                                  effective resolution (post-crop) using a continuous
-                                  curve 12000 × ratio^0.6, anchored at 1080p = 12 Mbps.
-                                  ~7 Mbps at 720p, ~17 Mbps at 1440p, ~28 Mbps at 4K,
-                                  capped at 35 Mbps. By default the encoder runs in
-                                  pure CRF mode — complex/grainy scenes get all the
-                                  bits they need.
 --no-veryslow                     Limit presets to 'slower' instead of 'veryslow'
---force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain
-                                  structure (higher psy-rd). 'animation' optimizes for
-                                  flat areas and sharp edges.
+--force-tune {grain,animation}    Force x265 tune preset.
 
 [ Dolby Vision & HDR ]
 --no-dolby-vision                 Ignore Dolby Vision metadata, encode as HDR10 only
---preserve-dv-profile             Skip Dolby Vision if the source profile cannot be
-                                  reproduced by x265 (e.g. profile 7.x), instead of
-                                  silently downgrading to 8.1. Outputs HDR10 in that case.
+--preserve-dv-profile             Skip Dolby Vision if the source profile cannot be reproduced.
 --temp-dir TEMP_DIR               Directory for DV temp files to avoid /tmp RAM exhaustion.
-                                  Crucial for Linux systems using tmpfs for /tmp.
---no-hdr10plus                    Ignore HDR10+ dynamic metadata even if present in the
-                                  source (encoded as HDR10 only). HDR10+ is auto-detected
-                                  and embedded by default via hdr10plus_tool, including
-                                  alongside Dolby Vision — both metadata layers coexist
-                                  in the HEVC bitstream.
+--no-hdr10plus                    Ignore HDR10+ dynamic metadata even if present in the source.
 
 [ Noise Reduction ]
---no-denoise                      Disable the adaptive noise reduction. By default
-                                  denoising is enabled and auto-calibrated from
-                                  detected noise/grain; in auto mode, if the source
-                                  is very clean (combined score below ~0.08), no
-                                  filter is applied.
+--no-denoise                      Disable the adaptive noise reduction.
 --denoise-strength STRENGTH       Override denoise strength (0.0=off, 1.0=max).
-                                  Overrides the automatic calibration. Any value > 0
-                                  is always honored, regardless of how clean the
-                                  source is.
---denoise-preserve-grain          40% gentler denoise that preserves some film grain
-                                  texture.
+--denoise-preserve-grain          40% gentler denoise that preserves some film grain texture.
 --denoise-engine {auto,nlmeans,bm3d,hybrid}
-                                  Pick the denoising engine. Default: 'auto' — smart
-                                  selection from the noise/grain ratio and computed
-                                  strength (may decide to skip on clean sources):
-                                    • bm3d when stationary noise dominates (noise/grain
-                                      ratio > 1.3) — typical of digital sources
-                                    • hybrid (hqdn3d + nlmeans) when grain dominates
-                                      (ratio < 0.77) — typical of 35mm film
-                                    • nlmeans for balanced cases or low strength
-                                  Forcing an explicit value (nlmeans / bm3d / hybrid)
-                                  guarantees denoising is always applied, even on a
-                                  clean source (minimum "light" strength if the
-                                  analysis detects nothing significant). If the
-                                  requested engine is missing from ffmpeg, the tool
-                                  falls back to an available engine with a visible
-                                  warning (never silent failure).
+                                  Pick the denoising engine. Default: 'auto'.
 
 [ Audio & Subtitles ]
 --no-audio                        Remove audio tracks (copied by default)
 --no-subs                         Remove subtitle tracks (copied by default)
---audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'fre,eng').
-                                  Removes unwanted dubs to save space.
+--audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'eng,fre').
 --downmix-audio                   Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0.
 --normalize-audio {off,single-pass,two-pass}
-                                  Apply EBU R128 loudness normalization to all kept audio
-                                  tracks. 'single-pass' uses dynamic linear normalization
-                                  (fast, slightly less accurate — single ffmpeg pass).
-                                  'two-pass' first measures the integrated loudness across
-                                  the whole file then applies a linear correction (slower
-                                  but precise — recommended). When active, audio is
-                                  re-encoded to AC3 at 640 kbps for 5.1 or 192 kbps for
-                                  stereo. Off by default.
---normalize-audio-target LUFS     Integrated loudness target in LUFS (default: -16.0,
-                                  suited for TV/streaming. Use -23.0 for EBU R128
-                                  broadcast).
+                                  Apply EBU R128 loudness normalization. Off by default.
+--normalize-audio-target LUFS     Integrated loudness target in LUFS (default: -16.0).
 
 [ System ]
 --verbose                         Display technical details of adaptive analysis
@@ -1288,336 +1056,57 @@ find . -type f -name "*.mkv" ! -name "*_adaptive.mkv" -exec ./adaptive-encoder {
 
 ## 🧰 Flag usage examples
 
-This section gathers concrete examples, organized by flag category. Examples use Linux/macOS syntax (`./adaptive-encoder`) — on Windows, replace with `.\adaptive-encoder.exe`.
+Examples use Linux/macOS syntax (`./adaptive-encoder`) — on Windows, replace with `.\adaptive-encoder.exe`.
 
 ### 📐 Video settings
 
-**Force framerate to 23.976 (typical cinema)** — useful if the source reports variable framerate or has a suspicious A/V wrap:
 ```bash
 ./adaptive-encoder "film.mkv" --force-fps 23.976
-```
-
-**Disable black bar detection** — use this when the source has no black bars (Academy 1.37, full-frame 1.85) or when auto-crop is incorrectly trimming graphic elements:
-```bash
 ./adaptive-encoder "film_137.mkv" --no-crop-detect
-```
-
-**Manually adjust the CRF baseline** — a higher base CRF reduces size at the cost of visual quality:
-```bash
-# Higher quality (larger file, closer to remux)
 ./adaptive-encoder "film.mkv" --base-crf 20.0
-
-# Smaller size (slightly degraded quality, useful for streaming)
-./adaptive-encoder "film.mkv" --base-crf 24.0
-```
-
-**Convert a 4K HDR source to 1080p SDR** — for older TVs or non-HDR displays. The conversion uses libplacebo (BT.2390) with zscale+tonemap=mobius fallback:
-```bash
 ./adaptive-encoder "4k_dolbyvision.mkv" --downscale-1080p-sdr
-```
-
-**More samples for adaptive analysis** — useful for films with highly varied content (anthology, long documentaries) where the default may under-represent some scenes:
-```bash
 ./adaptive-encoder "anthology_3h.mkv" --max-samples 600
 ```
 
 ### 🎚️ Bitrate & presets
 
-> ℹ️ **Default behavior:** without any bitrate flag, the encoder runs in **pure CRF mode** (no bitrate cap). Final size depends only on content complexity and `--base-crf` (default: 22.0). Enabling `--vbv` or `--max-bitrate` imposes a cap.
-
-#### Quick CRF scale
-
-CRF is an inverted quality scale (lower = better). Typical effect on the final size of a re-encoded 1080p Blu-ray remux:
-
-| `--base-crf` | Effect | Typical use case |
-|---|---|---|
-| 18 | Near-transparent, very large file | Maximum archival, masters |
-| 20 | Excellent, slightly lighter | Quality archival, **near-remux** |
-| 22 (default) | Good quality/size tradeoff | General use |
-| 24 | Visible on complex scenes | Size reduction, personal streaming |
-| 26+ | Visible artifacts | Avoid unless space-constrained |
-
-Rule of thumb: **each +1 on CRF reduces size by about 20-25%**.
-
-```bash
-# Higher quality (larger file, closer to remux)
-./adaptive-encoder "film.mkv" --base-crf 20.0
-
-# Tradeoff (implicit default)
-./adaptive-encoder "film.mkv" --base-crf 22.0
-
-# Smaller size (slightly degraded quality, useful for personal streaming)
-./adaptive-encoder "film.mkv" --base-crf 24.0
-```
-
-> ⚠️ The base CRF is **adjusted frame-by-frame** by the adaptive analysis. Simple scenes get a higher CRF (bit savings), complex scenes a lower CRF (detail preservation). `--base-crf` shifts the whole curve.
-
-#### Cap the bitrate with VBV
-
-**`--vbv` — Automatic adaptive cap**: calibrates max bitrate to the effective post-crop resolution (~7 Mbps at 720p, ~12 Mbps at 1080p, ~17 Mbps at 1440p, ~28 Mbps at 4K). Bounded between **2.5 Mbps and 35 Mbps** (floor to keep SD/360p watchable, cap to stay compatible with consumer players). Recommended if you want a reasonable cap without thinking:
-
 ```bash
 ./adaptive-encoder "film.mkv" --vbv
-```
-
-**`--max-bitrate` — Manual cap in kbps**: forces a precise value, **overrides the auto-calc of `--vbv`**. Useful for targeting a specific file size:
-
-```bash
-# Manual cap at 10 Mbps
 ./adaptive-encoder "film.mkv" --max-bitrate 10000
-
-# 20 Mbps cap for 4K
-./adaptive-encoder "film_4k.mkv" --max-bitrate 20000
-```
-
-> ℹ️ **`--vbv` / `--max-bitrate` interaction:** if you pass `--max-bitrate`, its value wins and `--vbv`'s automatic calc is ignored. Combining both flags isn't useful.
-
-**`--vbv-bufsize` — VBV buffer size in kbits**: by default, buffer = **1.5× max bitrate**. A larger buffer allows longer peaks (smooths bitrate pumping on highly variable content):
-
-```bash
-# Buffer 1.5× cap — default behavior, shown for reference
-./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 22500
-
-# Buffer 2× — for highly variable scenes (sports, fast action, fireworks)
-./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 30000
-
-# Buffer 3× — typical player spec ceiling (beyond that: compatibility risks)
-./adaptive-encoder "film.mkv" --max-bitrate 15000 --vbv-bufsize 45000
-```
-
-#### Encoding presets
-
-**Faster encoding** — switches to `slower` instead of `veryslow` (about 2× faster, quality ~1-2% below, recommended for large batches):
-```bash
 ./adaptive-encoder "film.mkv" --no-veryslow
-```
-
-**Force `grain` tune** — preserves grain structure (higher psy-rd, deblock disabled). For scanned 35mm/16mm film:
-```bash
 ./adaptive-encoder "western_1970.mkv" --force-tune grain --no-denoise
-```
-
-**Force `animation` tune** — optimizes for flat areas and sharp edges. For cartoons, anime, motion design:
-```bash
 ./adaptive-encoder "anime.mkv" --force-tune animation
 ```
 
 ### 📺 Dolby Vision & HDR
 
-**Force HDR10 output even if the source is Dolby Vision** — useful for compatibility with players that bug on DV:
 ```bash
 ./adaptive-encoder "uhd_dolbyvision.mkv" --no-dolby-vision
-```
-
-**Refuse the Profile 7 → 8.1 conversion** — preserves DV only if the source profile can be reproduced natively, otherwise outputs HDR10:
-```bash
 ./adaptive-encoder "blu-ray_dv_profile7.mkv" --preserve-dv-profile
-```
-
-**Redirect DV temp files** — crucial on Linux with `/tmp` on tmpfs (limited to RAM) or if the system partition is small:
-```bash
-# Linux
 ./adaptive-encoder "film_dv.mkv" --temp-dir /mnt/ssd/temp
-
-# macOS
-./adaptive-encoder "film_dv.mkv" --temp-dir ~/temp
-
-# Windows (from PowerShell)
 .\adaptive-encoder.exe "film_dv.mkv" --temp-dir D:\temp
-```
-
-**Ignore HDR10+ even if present** — useful if your TV only handles HDR10 and you want to avoid unnecessary SEI:
-```bash
 ./adaptive-encoder "film_hdr10plus.mkv" --no-hdr10plus
 ```
 
 ### 🌑 Noise reduction
 
-> ℹ️ **Default behavior:** without any denoise flag, the engine is `auto` and the strength is auto-calibrated from measured noise and grain. If the source is very clean (combined score < 0.08), **no filter is applied** — you get your file back without any processing. On a noisy or grainy source, auto picks the engine and the strength. **Picking an engine explicitly** (`--denoise-engine nlmeans/bm3d/hybrid`) **guarantees denoising is always applied**, even on a clean source.
-
-**Default auto mode (no denoise flag)** — implicit behavior, the tool decides everything. `auto` selects intelligently:
-
-| Detected noise/grain profile | Engine picked | Why |
-|---|---|---|
-| Stationary noise dominates (noise/grain ratio > 1.3) | **bm3d** | Ideal on sensor / clean digital noise |
-| Grain dominates (ratio < 0.77) | **hybrid** (hqdn3d + nlmeans) | Suited for 35mm/16mm film grain |
-| Balanced or low strength | **nlmeans** | Fast and general-purpose |
-
-```bash
-# Full auto — the tool measures, picks the engine and the strength
-./adaptive-encoder "film.mkv"
-```
-
-**Fully disable denoising** — for archival, film sources, or any content where master fidelity matters more than cleanliness:
 ```bash
 ./adaptive-encoder "film_35mm.mkv" --no-denoise
-```
-
-**Force a specific denoise strength** — overrides the automatic calibration. **Any value > 0 is always applied**, even on a source that auto would have classified as "too clean to denoise":
-```bash
-# Light denoise on clean digital source (auto would have skipped this filter)
 ./adaptive-encoder "digital_source.mkv" --denoise-strength 0.2
-
-# Strong denoise on VHS / noisy SD capture
 ./adaptive-encoder "vhs_rip.mkv" --denoise-strength 0.8
-```
-
-**Grain preservation mode** — denoises 40% less aggressively, keeps some texture (compromise between archival and cleanliness):
-```bash
 ./adaptive-encoder "film_70mm.mkv" --denoise-preserve-grain
-```
-
-**Force a specific engine** — bypasses the auto selection. The engine you pick is **always applied**, even on a source that auto would have classified as "too clean". If ffmpeg lacks the requested engine, it falls back to an available one with a visible warning:
-```bash
-# bm3d — max quality on stationary noise (digital sensor, modern grading)
 ./adaptive-encoder "raw_camera.mkv" --denoise-engine bm3d
-
-# nlmeans — fast and general-purpose, forces selection without letting auto decide
-./adaptive-encoder "film.mkv" --denoise-engine nlmeans
-
-# hybrid — chains hqdn3d + nlmeans, ideal for mixed sources (upscaled SD/HD)
 ./adaptive-encoder "remaster_dvd.mkv" --denoise-engine hybrid
-
-# Explicitly back to auto (same as passing nothing)
-./adaptive-encoder "film.mkv" --denoise-engine auto
 ```
-
-> 💡 **How to verify what was applied:** the `denoise:` line in `▶ Selecting parameters…` shows an `auto→` prefix if auto picked the engine. Example:
-> - `denoise: moderate (auto→hybrid, strength 35%)` → auto picked hybrid
-> - `denoise: moderate (hybrid, strength 35%)` → you forced hybrid with `--denoise-engine hybrid`
 
 ### 🔊 Audio & subtitles
 
-> ℹ️ **Default behavior:** without any audio flag, **all audio tracks are stream-copied bit-perfect** — no re-encoding, no loss. All subtitle tracks too. Enabling `--normalize-audio` or `--downmix-audio` forces re-encoding to AC3 and loses bit-perfect copy.
-
-**Strip all audio tracks** — produces a video-only master, useful before an external audio remux or to archive a "clean image":
 ```bash
-./adaptive-encoder "film.mkv" --no-audio
-```
-
-**Strip all subtitle tracks** — removes all SRT / PGS / ASS / VobSub tracks from the output:
-```bash
-./adaptive-encoder "film.mkv" --no-subs
-```
-
-#### Filter audio tracks by language
-
-`--audio-lang` keeps only the listed languages (ISO 639-2/B codes: `eng`, `fre`, `jpn`, `ger`, `spa`, `ita`, `por`, `rus`, etc.). **The flag acts only as a filter — it does not reorder tracks.** Kept audio tracks preserve the source file's order; the player's default track will therefore be the first track *from the source file* that matches one of the listed languages. Subtitles are **not** filtered by this flag — use `--no-subs` if you want all of them removed.
-
-```bash
-# Keep English + French (output order follows the source file, not the order
-# listed here)
 ./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-
-# Original English VO only (all other tracks stripped)
-./adaptive-encoder "film.mkv" --audio-lang "eng"
-
-# Anime: keep Japanese + English + French, source order preserved
-./adaptive-encoder "anime.mkv" --audio-lang "jpn,eng,fre"
-```
-
-> 💡 To reorder tracks or change the default track, do it as a post-processing step with `mkvmerge` (`--default-track-flag`) or `mkvpropedit`.
-
-#### Downmix heavy multichannel tracks
-
-`--downmix-audio` is **conditional**: it only re-encodes tracks that actually need to be downmixed (8 channels or more). Tracks already in 5.1, stereo or mono remain **stream-copied bit-perfect** (original codec preserved) as long as `--normalize-audio` is not also active.
-
-| Source detected | With `--downmix-audio` alone | With `--downmix-audio` + `--normalize-audio` |
-|---|---|---|
-| Atmos / TrueHD Atmos / DTS:X (8+ channels) | **5.1 AC3 640 kbps** (re-encoded) | 5.1 AC3 640 kbps |
-| 7.1 (8 channels) | **5.1 AC3 640 kbps** (re-encoded) | 5.1 AC3 640 kbps |
-| 5.1 (6 channels) | **stream-copied** (original codec) | 5.1 AC3 640 kbps |
-| Stereo (2 channels) | **stream-copied** (original codec) | Stereo AC3 192 kbps |
-| Mono (1 channel) | **stream-copied** (original codec) | Mono AC3 96 kbps |
-
-> ℹ️ Atmos in EAC3 JOC is typically delivered on a 5.1 base (6 channels) — the tool detects it as 5.1 and **stream-copies** it (preserving the Atmos metadata). Only Atmos in TrueHD (7.1.x base → 8 reported channels) triggers the downmix to 5.1 AC3.
-
-```bash
-# Downmix Atmos / 7.1 → 5.1 AC3 640 kbps (already-5.1 or stereo tracks stay intact)
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio
-```
-
-> ⚠️ **To answer "how do I get specifically 5.1 AC3 at 640 kbps?":** that's exactly what `--downmix-audio` produces on a 7.1 or TrueHD Atmos source. 640 kbps isn't configurable on the CLI — it's the fixed value the tool uses for 5.1 (192 kbps for stereo, 96 kbps for mono). If you want to **force AC3 re-encoding even on an already-5.1 source** (e.g. to normalize loudness and have a uniform bitrate across the library), combine with `--normalize-audio two-pass`.
->
-> If you need a different bitrate (e.g. 448 kbps), a different codec (EAC3, AAC, Opus), or want to force stereo output (the `--downmix-audio` flag always targets 5.1 from 7.1+ sources), do it as a post-processing step with ffmpeg.
-
-#### EBU R128 normalization (loudness)
-
-`--normalize-audio` applies loudness normalization to all kept audio tracks. **It mandatorily enables re-encoding** to AC3 → you lose bit-perfect original audio. AC3 bitrates: 640 kbps for 5.1, 192 kbps for stereo, **96 kbps for mono**.
-
-Two modes:
-
-```bash
-# Single-pass — fast (1 ffmpeg pass), dynamic normalization
-# Slightly less accurate on scene-by-scene loudness variations
-./adaptive-encoder "film.mkv" --normalize-audio single-pass
-
-# Two-pass — recommended: measure pass then linear correction
-# Slower (measurement ~= film duration extra), but precise
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass
-```
-
-**Custom LUFS target** — default `-16 LUFS` (TV / streaming). Common targets:
-
-```bash
-# Strict EBU R128 broadcast (European TV: BBC, ARTE, France 2, etc.)
 ./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -23.0
-
-# ATSC A/85 (US broadcast)
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -24.0
-
-# Spotify / YouTube-style streaming
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -14.0
-
-# Apple Music / Apple TV (equivalent to the default)
-./adaptive-encoder "film.mkv" --normalize-audio two-pass --normalize-audio-target -16.0
-```
-
-#### Common audio combinations
-
-**Downmix + normalization (consistent 5.1 home theater)** — 5.1 AC3 640 kbps output with aligned loudness. The most common combination for a library targeting a 5.1 AV receiver:
-
-```bash
 ./adaptive-encoder "film_atmos.mkv" --downmix-audio --normalize-audio two-pass
-```
-
-**Full 5.1 EBU R128 broadcast library** — language filter + downmix + -23 LUFS normalization:
-
-```bash
-./adaptive-encoder "film_atmos.mkv" \
-  --audio-lang "eng,fre" \
-  --downmix-audio \
-  --normalize-audio two-pass \
-  --normalize-audio-target -23.0
-```
-
-**Maximum audio preservation** — all tracks stream-copied bit-perfect, no transformation (default behavior, shown here for reference):
-
-```bash
-./adaptive-encoder "film.mkv"
-```
-
-**Filter languages but preserve bit-perfect** — strip unwanted dubs while keeping kept tracks in pure copy:
-
-```bash
-./adaptive-encoder "film.mkv" --audio-lang "eng,fre"
-```
-
-### 🖥️ System
-
-**Verbose mode — see adaptive analysis details:**
-```bash
-./adaptive-encoder "film.mkv" --verbose
-```
-
-**Dry-run — analyze and display the command without encoding:**
-```bash
-./adaptive-encoder "film.mkv" --dry-run
-```
-
-**Specify a custom output file:**
-```bash
-./adaptive-encoder "input.mkv" -o "/mnt/library/Movies/Inception (2010).mkv"
 ```
 
 ---
@@ -1625,7 +1114,6 @@ Two modes:
 ### 🎯 Useful combinations (full scenarios)
 
 **📼 Grainy 35mm archive, maximum master fidelity**
-Preserves grain structure, no denoising, tuned encoder:
 ```bash
 ./adaptive-encoder "western_1970.mkv" \
   --no-denoise \
@@ -1634,7 +1122,6 @@ Preserves grain structure, no denoising, tuned encoder:
 ```
 
 **🎌 Anime / cartoon optimized**
-Animation tune, denoising active (modern anime has little grain):
 ```bash
 ./adaptive-encoder "anime_series_s01e01.mkv" \
   --force-tune animation \
@@ -1642,7 +1129,6 @@ Animation tune, denoising active (modern anime has little grain):
 ```
 
 **💾 Aggressive size reduction for personal streaming server**
-Higher CRF + bitrate cap + downmix + filtered languages:
 ```bash
 ./adaptive-encoder "film.mkv" \
   --base-crf 24.0 \
@@ -1652,17 +1138,7 @@ Higher CRF + bitrate cap + downmix + filtered languages:
   --no-veryslow
 ```
 
-**📡 Heterogeneous library with normalized audio**
-Two-pass loudness at -16 LUFS, language filter, adaptive VBV cap:
-```bash
-./adaptive-encoder "film.mkv" \
-  --vbv \
-  --audio-lang "eng,fre" \
-  --normalize-audio two-pass
-```
-
 **📺 UHD Blu-ray Dolby Vision Profile 7 — max quality, perfect A/V**
-Force 23.976 for DV resync, external temp dir, low base-crf:
 ```bash
 ./adaptive-encoder "uhd_dv_profile7.mkv" \
   --force-fps 23.976 \
@@ -1670,8 +1146,7 @@ Force 23.976 for DV resync, external temp dir, low base-crf:
   --base-crf 20.0
 ```
 
-**📺 4K HDR → 1080p SDR for an older TV with controlled loudness**
-Downscale + tonemap + downmix + broadcast normalization:
+**📺 4K HDR → 1080p SDR for an older TV**
 ```bash
 ./adaptive-encoder "4k_hdr10plus.mkv" \
   --downscale-1080p-sdr \
@@ -1680,23 +1155,12 @@ Downscale + tonemap + downmix + broadcast normalization:
   --normalize-audio-target -23.0
 ```
 
-**🧪 Test before a large batch — verify detection without encoding**
-Dry-run + verbose to see the full analysis:
+**🧪 Test before a large batch**
 ```bash
 ./adaptive-encoder "sample.mkv" --dry-run --verbose
 ```
 
-**⚡ Fast batch encoding, reasonable quality**
-Slower instead of veryslow, slightly higher CRF:
-```bash
-./adaptive-encoder "film.mkv" \
-  --no-veryslow \
-  --base-crf 23.0 \
-  --vbv
-```
-
-**🎞️ Restored VHS/DVD capture — aggressive denoising**
-bm3d + manual strength + grain tune for what texture remains:
+**🎞️ Restored VHS/DVD — aggressive denoising**
 ```bash
 ./adaptive-encoder "vhs_concert.mkv" \
   --denoise-engine bm3d \
@@ -1709,67 +1173,59 @@ bm3d + manual strength + grain tune for what texture remains:
 ## 🛠️ Troubleshooting
 
 **The command does nothing / "not recognized".**
-You're probably in the wrong folder, or `adaptive-encoder.exe` isn't in the current folder. Check with `pwd` (PowerShell) or `cd` (CMD) that you're in the right place, and with `ls` / `dir` that the `.exe` is actually there.
+You're probably in the wrong folder, or `adaptive-encoder.exe` isn't in the current folder. Check with `pwd` (PowerShell) or `cd` (CMD), and with `ls` / `dir` that the `.exe` is actually there.
 
 **Dolby Vision or HDR10+ doesn't work on Windows.**
-On Windows, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are not functional inside the binary. Download all three executables and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. Without them, DV and HDR10+ are silently ignored and the output falls back to HDR10 only.
+Make sure you extracted *all* the files from the zip — not just `adaptive-encoder.exe`. `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` are included in the zip and must be in the same folder as the `.exe`. If any file is missing, DV and HDR10+ are silently ignored and the output falls back to HDR10 only.
 
 **My `_adaptive.mkv` files get reprocessed every time I run the batch.**
-Use the batch commands that include `-Exclude *_adaptive.mkv` (PowerShell) or the bash loop that filters `*_adaptive.mkv` (Linux/macOS). See the "Batch encode" section above.
+Use the batch commands that include `-Exclude *_adaptive.mkv` (PowerShell) or the bash loop that filters `*_adaptive.mkv` (Linux/macOS).
 
 **PowerShell refuses to run the `.exe`.**
-First run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in the PowerShell window. It only lasts for the current session.
+First run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in the PowerShell window.
 
 **`Get-ChildItem` doesn't work.**
 You're in CMD, not PowerShell. The prompt should start with `PS`. Type `powershell` then Enter to switch.
 
 **Encoding takes hours per film — is that normal?**
-Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` to switch to `slower` (about 2× faster), or `--no-veryslow --base-crf 24` to reduce further.
+Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` to switch to `slower` (about 2× faster).
 
 **Disk space saturated during Dolby Vision encoding.**
-DV temp files can be large. Use `--temp-dir D:\temp` (Windows) or `--temp-dir /path/free-disk` (Linux/macOS) to redirect them to a disk with more space.
+Use `--temp-dir D:\temp` (Windows) or `--temp-dir /path/free-disk` (Linux/macOS).
 
 **I forced `--denoise-strength` or `--denoise-engine` and the tool seems to ignore my choice.**
-Check the `denoise:` line shown in `▶ Selecting parameters…`:
-- `auto→` prefix = auto mode picked for you (you didn't force)
-- No prefix = your choice is applied as-is
-- `disabled` = you passed `--no-denoise`
-
-Forcing `--denoise-engine` with an explicit value (`nlmeans`, `bm3d`, `hybrid`) guarantees denoising is applied, even on a clean source. Only `auto` mode can decide to skip.
+Check the `denoise:` line in `▶ Selecting parameters…`: `auto→` prefix = auto picked; no prefix = your choice applied; `disabled` = you passed `--no-denoise`.
 
 ---
 
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). `ffmpeg` and `ffprobe` are bundled on all three platforms. `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are bundled on Linux and macOS. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` and place them in the same folder as `adaptive-encoder.exe`** — no installation, just drop the files.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). `ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are included in the zip on all platforms — extract everything and keep the files in the same folder.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, preset) are automatically tuned to the effective resolution.
 
 **Do I need to download any tools separately?**
-On Linux and macOS: no, everything is bundled. On Windows: `ffmpeg` and `ffprobe` are bundled, but **`dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe` must be downloaded and placed in the same folder as `adaptive-encoder.exe`** — no installation, just drop the files.
+No. Everything is included in the zip on all platforms. Extract the zip and keep all files in the same folder — no additional downloads needed.
 
 **Do Dolby Vision and HDR10+ work automatically?**
-Yes, provided `dovi_tool`, `hdr10plus_tool` and `mkvmerge` are available. On Linux and macOS, everything is bundled and works with no setup. **On Windows, download `dovi_tool.exe`, `hdr10plus_tool.exe` and `mkvmerge.exe`** and place them in the same folder as `adaptive-encoder.exe` — no installation, just drop the files. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources and preserves both metadata tracks with no configuration. If a source carries both, they coexist in the HEVC bitstream: Dolby Vision displays use the RPU, HDR10+-only displays (e.g. Samsung) use the SMPTE 2094-40 SEI. Selection happens on the player/display side based on what it supports.
+Yes. On all platforms, the tools are included in the zip — extract the full zip and keep the files in the same folder. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources. If a source carries both, they coexist in the HEVC bitstream.
 
 **Does Profile 7 → 8.1 conversion work?**
-Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
+Yes, it's the default. If you'd rather output HDR10 than accept the conversion, use `--preserve-dv-profile`.
 
 **Is denoising active by default? Will my grain be touched?**
-**Adaptive** denoising is enabled by default, with the engine in `auto` mode. Strength is auto-calibrated from noise and grain metrics: if the combined score is below ~0.08, no filter is applied. On a clean source (recent Blu-ray without heavy grain), you'll get no processing. On a heavily-grained 35mm film, you'll get moderate denoising with the `hybrid` engine (selected automatically because grain dominates). **If you pick an engine explicitly** (`--denoise-engine nlmeans/bm3d/hybrid`), denoising is always applied, even on a clean source — only `auto` can decide to skip. To guarantee zero filtering regardless of the source, use `--no-denoise`. For a compromise (preserve some grain texture), use `--denoise-preserve-grain`.
-
-**How does the `--denoise-engine` `auto` mode work?**
-In auto mode (the default), the tool looks at the measured noise/grain ratio on the source and the computed strength, then picks the optimal engine: **bm3d** when stationary noise dominates (modern digital sources, noise/grain ratio > 1.3), **hybrid** (hqdn3d + nlmeans) when grain dominates (35mm/16mm film, ratio < 0.77), **nlmeans** in balanced cases or at low strength. `auto` is the only mode that can decide to skip denoising entirely on very clean sources. If you force `--denoise-engine` with an explicit value, denoising is always applied (minimum "light" strength if the analysis detects nothing significant). If the requested engine isn't available in the bundled ffmpeg, the tool automatically falls back to a compatible engine with a visible warning (never silent failure).
+Adaptive denoising is enabled in `auto` mode. If the combined score is below ~0.08, no filter is applied. To guarantee zero filtering, use `--no-denoise`. For a compromise, use `--denoise-preserve-grain`.
 
 **When should I use `--normalize-audio`?**
-Mostly for heterogeneous libraries (films from different decades, mix of sources, dubs recorded at varying levels). The `two-pass` mode first measures integrated loudness across the whole file then applies a linear correction — the same approach Netflix/Apple/YouTube use on their platform side. Default target `-16 LUFS` is calibrated for TV/streaming; for strict EBU R128 broadcast, use `-23.0`. Important: enabling normalization forces audio re-encoding (AC3), so you lose the bit-perfect original audio. Without `--normalize-audio`, audio tracks are stream-copied.
+Mostly for heterogeneous libraries. The `two-pass` mode is recommended. Default target `-16 LUFS` for TV/streaming; use `-23.0` for strict EBU R128 broadcast. Enabling normalization forces re-encoding to AC3.
 
 **Why are my files larger than with other encoders?**
-Intentional design choice — detail and HDR metadata preservation. To reduce file size, use `--vbv` (enables a resolution-aware cap), `--max-bitrate` (forces a manual cap), or raise `--base-crf`.
+Intentional design choice — detail and HDR metadata preservation. Use `--vbv`, `--max-bitrate`, or raise `--base-crf` to reduce size.
 
 **Encoding speed?**
-The tool uses x265 `slower` or `veryslow` presets depending on content complexity — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`. Note: `--normalize-audio two-pass` adds an audio measurement pass (proportional to film duration, no video encoding involved).
+The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. Use `--no-veryslow` for faster encoding.
 
 **What if it doesn't work for my files?**
 Open an issue on GitHub or ask on Discord — happy to help.
