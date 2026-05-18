@@ -8,7 +8,7 @@
 
 > **L'encodeur H.265 qui ne casse pas votre Dolby Vision.**
 
-[![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD) [![Buy me a coffee](https://img.shields.io/badge/Un%20café-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/thegrunge45)
+[![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
 ---
 
@@ -115,11 +115,14 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 
 ---
 
-## ☕ Cet outil est gratuit — offrez-moi un café si ça vous a aidé !
+## 💰 Tarif
 
-Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du temps ou amélioré votre bibliothèque, un petit café est toujours apprécié — mais jamais obligatoire.
+## **$49.99 USD**
+**Paiement unique. Licence à vie. Essai gratuit 7 jours.**
 
-👉 **[M'offrir un café](https://paypal.me/thegrunge45)** — totalement optionnel, toujours apprécié ☕
+Pas d'abonnement. Pas de DRM agressif. Testez l'outil pendant 7 jours avant de décider.
+
+👉 **[Essayer gratuitement 7 jours](https://adaptive-encoder.com)** | **[Acheter — $49.99 USD](https://adaptive-encoder.com)**
 
 💬 **Questions ou retours ? Rejoignez le [Discord](https://discord.gg/UHrEn2H6jD)** — avec plaisir.
 
@@ -319,7 +322,6 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 - 💬 **Discord** (réponses rapides) : [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
 - 📧 **Email** : [osx300@gmail.com](mailto:osx300@gmail.com)
-- ☕ **M'offrir un café** (optionnel) : [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
 
 ---
 ---
@@ -328,7 +330,7 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 > **The H.265 encoder that doesn't break your Dolby Vision.**
 
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD) [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/thegrunge45)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
 ---
 
@@ -435,11 +437,14 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 
 ---
 
-## ☕ This tool is free — buy me a coffee if it helped!
+## 💰 Pricing
 
-Adaptive Video Encoder is completely free to use. If it saved you time or improved your library, a small coffee is always appreciated — but never required.
+## **$49.99 USD**
+**One-time payment. Lifetime license. Free 7-day trial.**
 
-👉 **[Buy me a coffee](https://paypal.me/thegrunge45)** — totally optional, always appreciated ☕
+No subscription. No aggressive DRM. Try the tool for 7 days before you decide.
+
+👉 **[Try free for 7 days](https://adaptive-encoder.com)** | **[Buy — $49.99 USD](https://adaptive-encoder.com)**
 
 💬 **Questions or feedback? Join the [Discord](https://discord.gg/UHrEn2H6jD)** — happy to help.
 
@@ -638,4 +643,3 @@ Rule of thumb: **each +1 on the CRF reduces file size by roughly 20-25%**.
 
 - 💬 **Discord** (fast replies): [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
 - 📧 **Email**: [osx300@gmail.com](mailto:osx300@gmail.com)
-- ☕ **Buy me a coffee** (optional): [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
