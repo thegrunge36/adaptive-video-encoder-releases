@@ -109,7 +109,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 
 | Plateforme | Interface graphique | Ligne de commande | Notes |
 |---|---|---|---|
-| 🪟 Windows 10/11 (x64) | ✅ GUI incluse | ✅ CLI disponible | Tous les outils inclus dans le zip |
+| 🪟 Windows 10/11 (x64) | ✅ GUI incluse | ✅ CLI disponible | |
 | 🐧 Linux (x64) | ✅ GUI incluse | ✅ CLI disponible | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
 | 🍎 macOS (Apple Silicon) | ✅ GUI incluse | ✅ CLI disponible | M1, M2, M3 — binaire natif arm64 |
 
@@ -128,58 +128,7 @@ Pas d'abonnement. Pas de DRM agressif. Testez l'outil pendant 7 jours avant de d
 
 ---
 
-## ⚙️ Installation
-
-Tous les outils nécessaires (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) sont **inclus dans le zip** sur toutes les plateformes. Extrayez le zip et gardez tous les fichiers dans le même dossier — aucun téléchargement supplémentaire requis.
-
-### 🪟 Windows
-
-Extrayez le zip, puis lancez `adaptive-encoder-gui.exe`. Tous les outils sont inclus.
-
-### 🐧 Linux
-
-Extrayez le zip, puis lancez l'interface graphique :
-```bash
-chmod +x ./adaptive-encoder-gui
-./adaptive-encoder-gui
-```
-
-### 🍎 macOS (premier lancement uniquement)
-
-macOS bloque les binaires non signés. Exécutez ceci **une seule fois** :
-```bash
-xattr -d com.apple.quarantine ./adaptive-encoder-gui
-chmod +x ./adaptive-encoder-gui
-```
-
----
-
-## 🚀 Démarrage rapide
-
-### Interface graphique (recommandé)
-
-Lancez l'application, sélectionnez votre fichier vidéo, ajustez les options si nécessaire, et lancez l'encodage. L'interface affiche l'analyse adaptative en temps réel et la progression de l'encodage.
-
-Toutes les options disponibles en ligne de commande sont accessibles depuis l'interface graphique.
-
-### Ligne de commande
-
-Pour les utilisateurs avancés ou l'automatisation en batch :
-
-```bash
-./adaptive-encoder "mon_film.mkv"
-```
-
-Le fichier de sortie sera créé à côté, nommé `mon_film_adaptive.mkv`.
-
-**Mode test — analyser sans encoder (recommandé sur un nouveau type de source) :**
-```bash
-./adaptive-encoder "mon_film.mkv" --dry-run
-```
-
----
-
-## 📖 Toutes les options (ligne de commande)
+## 📖 Toutes les options
 
 ```
 -h, --help                        Affiche l'aide et quitte
@@ -234,44 +183,10 @@ Le fichier de sortie sera créé à côté, nommé `mon_film_adaptive.mkv`.
 
 ---
 
-## 🎯 Exemples de combinaisons utiles (ligne de commande)
-
-**📼 Archive 35mm grenu, fidélité au master maximale**
-```bash
-./adaptive-encoder "western_1970.mkv" --no-denoise --force-tune grain --base-crf 20.0
-```
-
-**🎌 Anime / dessin animé optimisé**
-```bash
-./adaptive-encoder "anime_serie_s01e01.mkv" --force-tune animation --audio-lang "jpn,fre"
-```
-
-**💾 Réduction de taille pour serveur de streaming personnel**
-```bash
-./adaptive-encoder "film.mkv" --base-crf 24.0 --max-bitrate 8000 --downmix-audio --audio-lang "fre,eng" --no-veryslow
-```
-
-**📺 Blu-ray UHD Dolby Vision Profil 7 — qualité maximale**
-```bash
-./adaptive-encoder "uhd_dv_profil7.mkv" --force-fps 23.976 --temp-dir /mnt/ssd/temp --base-crf 20.0
-```
-
-**📺 Conversion 4K HDR → 1080p SDR pour TV ancienne**
-```bash
-./adaptive-encoder "4k_hdr10plus.mkv" --downscale-1080p-sdr --downmix-audio --normalize-audio two-pass --normalize-audio-target -23.0
-```
-
-**🎞️ Capture VHS/DVD restaurée — débruitage agressif**
-```bash
-./adaptive-encoder "vhs_concert.mkv" --denoise-engine bm3d --denoise-strength 0.7 --base-crf 22.0
-```
-
----
-
 ## 🛠️ Dépannage
 
 **Le Dolby Vision ou le HDR10+ ne fonctionne pas.**
-Vérifiez que vous avez bien extrait *tous* les fichiers du zip — pas seulement l'exécutable. `dovi_tool`, `hdr10plus_tool` et `mkvmerge` doivent se trouver dans le même dossier. Si un fichier manque, le DV et le HDR10+ sont ignorés silencieusement.
+Lancez un encodage avec `--dry-run` (ou le mode test dans la GUI) pour vérifier que les métadonnées sont correctement détectées. Si le problème persiste, rejoignez le Discord pour obtenir de l'aide.
 
 **L'encodage prend des heures par film — c'est normal ?**
 Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez l'option `--no-veryslow` (ou l'équivalent dans la GUI) pour basculer sur `slower` (env. 2× plus rapide).
@@ -290,7 +205,7 @@ Exécutez `xattr -d com.apple.quarantine ./adaptive-encoder-gui` une seule fois 
 ## ❓ FAQ
 
 **Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). Interface graphique et ligne de commande disponibles sur les trois plateformes. Tous les outils sont inclus dans le zip.
+Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). Interface graphique et ligne de commande disponibles sur les trois plateformes.
 
 **C'est seulement pour la 4K ?**
 Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size`, preset) sont adaptés automatiquement à la résolution effective.
@@ -310,7 +225,7 @@ Choix de conception délibéré — préservation du détail et des métadonnée
 |---|---|---|
 | 18 | Quasi-transparent, fichier très lourd | Archivage maximal |
 | 20 | Excellent, légèrement plus léger | Archivage qualité, proche-remux |
-| 22 (défaut) | Bon compromis qualité/taille | Usage général |
+| 22 | Bon compromis qualité/taille | Usage général |
 | 24 | Visible sur scènes complexes | Réduction de taille, streaming perso |
 | 26+ | Artefacts visibles | À éviter sauf contrainte espace |
 
@@ -431,7 +346,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 
 | Platform | GUI | CLI | Notes |
 |---|---|---|---|
-| 🪟 Windows 10/11 (x64) | ✅ Included | ✅ Available | All tools included in the zip |
+| 🪟 Windows 10/11 (x64) | ✅ Included | ✅ Available | |
 | 🐧 Linux (x64) | ✅ Included | ✅ Available | Ubuntu 22.04+, Fedora 40+ |
 | 🍎 macOS (Apple Silicon) | ✅ Included | ✅ Available | M1, M2, M3 — native arm64 binary |
 
@@ -450,58 +365,7 @@ No subscription. No aggressive DRM. Try the tool for 7 days before you decide.
 
 ---
 
-## ⚙️ Installation
-
-All required tools (`ffmpeg`, `ffprobe`, `dovi_tool`, `hdr10plus_tool`, `mkvmerge`) are **bundled in the zip** on all platforms. Extract the zip and keep all files in the same folder — no additional downloads needed.
-
-### 🪟 Windows
-
-Extract the zip, then launch `adaptive-encoder-gui.exe`. All tools are included.
-
-### 🐧 Linux
-
-Extract the zip, then launch the GUI:
-```bash
-chmod +x ./adaptive-encoder-gui
-./adaptive-encoder-gui
-```
-
-### 🍎 macOS (first launch only)
-
-macOS blocks unsigned binaries. Run this **once** after downloading:
-```bash
-xattr -d com.apple.quarantine ./adaptive-encoder-gui
-chmod +x ./adaptive-encoder-gui
-```
-
----
-
-## 🚀 Quick start
-
-### GUI (recommended)
-
-Launch the application, select your video file, adjust options as needed, and start encoding. The interface displays the adaptive analysis in real time along with encoding progress.
-
-All options available on the command line are also accessible from the GUI.
-
-### Command line
-
-For advanced users or batch automation:
-
-```bash
-./adaptive-encoder "my_movie.mkv"
-```
-
-The output file will be created next to it, named `my_movie_adaptive.mkv`.
-
-**Test mode — analyze without encoding (recommended on a new source type):**
-```bash
-./adaptive-encoder "my_movie.mkv" --dry-run
-```
-
----
-
-## 📖 All options (command line)
+## 📖 All options
 
 ```
 -h, --help                        Display this help message and exit
@@ -555,44 +419,10 @@ The output file will be created next to it, named `my_movie_adaptive.mkv`.
 
 ---
 
-## 🎯 Useful combinations (command line)
-
-**📼 Grainy 35mm archive, maximum master fidelity**
-```bash
-./adaptive-encoder "western_1970.mkv" --no-denoise --force-tune grain --base-crf 20.0
-```
-
-**🎌 Anime / cartoon optimized**
-```bash
-./adaptive-encoder "anime_series_s01e01.mkv" --force-tune animation --audio-lang "jpn,eng"
-```
-
-**💾 Aggressive size reduction for personal streaming server**
-```bash
-./adaptive-encoder "film.mkv" --base-crf 24.0 --max-bitrate 8000 --downmix-audio --audio-lang "eng,fre" --no-veryslow
-```
-
-**📺 UHD Blu-ray Dolby Vision Profile 7 — max quality**
-```bash
-./adaptive-encoder "uhd_dv_profile7.mkv" --force-fps 23.976 --temp-dir /mnt/ssd/temp --base-crf 20.0
-```
-
-**📺 4K HDR → 1080p SDR for an older TV**
-```bash
-./adaptive-encoder "4k_hdr10plus.mkv" --downscale-1080p-sdr --downmix-audio --normalize-audio two-pass --normalize-audio-target -23.0
-```
-
-**🎞️ Restored VHS/DVD — aggressive denoising**
-```bash
-./adaptive-encoder "vhs_concert.mkv" --denoise-engine bm3d --denoise-strength 0.7 --base-crf 22.0
-```
-
----
-
 ## 🛠️ Troubleshooting
 
 **Dolby Vision or HDR10+ doesn't work.**
-Make sure you extracted *all* the files from the zip — not just the executable. `dovi_tool`, `hdr10plus_tool` and `mkvmerge` must be in the same folder. If any file is missing, DV and HDR10+ are silently ignored.
+Run an encode with `--dry-run` (or the test mode in the GUI) to verify metadata is correctly detected. If the issue persists, join the Discord for help.
 
 **Encoding takes hours per film — is that normal?**
 Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` (or the equivalent option in the GUI) to switch to `slower` (about 2× faster).
@@ -611,7 +441,7 @@ Run `xattr -d com.apple.quarantine ./adaptive-encoder-gui` once after downloadin
 ## ❓ FAQ
 
 **What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). GUI and command line available on all three platforms. All tools are included in the zip.
+Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). GUI and command line available on all three platforms.
 
 **Is this only for 4K?**
 No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, preset) are automatically tuned to the effective resolution.
@@ -631,7 +461,7 @@ Intentional design choice — detail and HDR metadata preservation. Use `--vbv`,
 |---|---|---|
 | 18 | Near-transparent, very large file | Maximum archival |
 | 20 | Excellent, slightly lighter | Quality archival, near-remux |
-| 22 (default) | Good quality/size balance | General use |
+| 22 | Good quality/size balance | General use |
 | 24 | Visible on complex scenes | Size reduction, personal streaming |
 | 26+ | Visible artifacts | Avoid unless space-constrained |
 
