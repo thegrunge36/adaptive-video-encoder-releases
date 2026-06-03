@@ -8,54 +8,58 @@
 
 > **L'encodeur H.265 qui ne casse pas votre Dolby Vision.**
 
-[![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
+[![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD) [![Buy me a coffee](https://img.shields.io/badge/Un%20café-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/thegrunge45)
 
 ---
 
 ## Réencodez votre vidéothèque sans compromis de qualité
 
-Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 4K, de sources HDR10, HDR10+ ou HLG. Vous voulez réencoder en H.265 pour récupérer des téraoctets — sans détruire les métadonnées qui font s'afficher vos films correctement sur votre OLED.
+Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 4K, de sources HDR10 ou HLG. Vous voulez réencoder en H.265 pour récupérer des téraoctets — sans détruire les métadonnées qui font s'afficher vos films correctement sur votre OLED.
 
-**Le problème :** La plupart des outils H.265 suppriment les métadonnées Dolby Vision Profil 7, ignorent les HDR10+ dynamiques, ou utilisent les mêmes paramètres pour toutes les vidéos. ffmpeg en manuel nécessite des heures de tests pour trouver les bons paramètres — et ces paramètres changent pour chaque source (grain, bruit, mouvement, complexité).
+**Le problème :** La plupart des outils H.265 suppriment les métadonnées Dolby Vision Profil 7, ou lissent le grain de façon uniforme et mal dosée. ffmpeg en manuel nécessite des heures de tests pour trouver les bons paramètres — et ces paramètres changent pour chaque vidéo (grain, bruit, mouvement, complexité).
 
-**La solution :** Adaptive Video Encoder analyse chaque vidéo image par image *avant* l'encodage, choisit automatiquement les meilleurs paramètres x265, et préserve intégralement votre Dolby Vision (Profil 5, 7, 8.x), HDR10+ (SMPTE 2094-40), HDR10 et HLG.
+**La solution :** Adaptive Video Encoder analyse chaque vidéo image par image *avant* l'encodage, choisit automatiquement les meilleurs paramètres x265, dose un débruitage adaptatif selon la source, et préserve intégralement votre Dolby Vision (Profil 5, 7, 8.x), ainsi que les métadonnées HDR10 et HLG.
 
-> 💡 **Philosophie :** Adaptive Video Encoder privilégie la **préservation du détail et des métadonnées HDR** sur la compression agressive. L'objectif est une qualité proche du remux, pas le meilleur ratio taille/qualité absolu.
+> 💡 **Philosophie :** Adaptive Video Encoder vise une qualité proche du remux et la **préservation intégrale des métadonnées HDR**. Le bruit et le grain sont **nettoyés automatiquement** de façon adaptative — dosée selon la source et sensible au mouvement — sans écraser le détail. La préservation du grain reste disponible à la demande (`--denoise-preserve-grain`, `--no-denoise`).
 
 ---
 
 ## 🎯 Fait pour vous si...
 
 **Bibliothèques Blu-ray 1080p :**
-- Vous archivez des remux Blu-ray 1080p et voulez une qualité maximale
+
+- Vous archivez des remux Blu-ray 1080p et voulez un débruitage adaptatif et propre, dosé selon la source (ou la préservation du grain à la demande)
 - Vous avez des sources HDR10 1080p que les encodeurs génériques gèrent mal
-- Vous voulez préserver le détail des scènes complexes (action, fantastique, sci-fi)
+- Vous voulez préserver chaque détail des scènes complexes (action, fantastique, sci-fi)
 
 **Bibliothèques UHD 4K :**
-- Vous archivez des Blu-rays UHD avec Dolby Vision ou HDR10+ et voulez une qualité maximale
+
+- Vous archivez des Blu-rays UHD avec Dolby Vision et voulez une qualité maximale
 - Vous gérez des sources HDR10 ou HLG sans calibrer chaque film manuellement
 
 **Tous formats :**
+
 - Vous privilégiez la qualité d'image sur les économies d'espace disque
+- Vous êtes à l'aise avec la ligne de commande
 - Vous en avez marre de régler les paramètres x265 et de comparer 12 versions du même film
 
 ## ⚠️ Pas pour vous si...
 
 - Vous cherchez une compression maximale pour économiser l'espace disque
+- Vous encodez surtout du contenu SDR simple sans grain (comédies récentes en intérieur, animation fluide, talking heads) — dans ces cas, des outils plus simples donnent souvent de meilleurs taux de compression
+- Vous voulez une interface graphique
 - Vous avez besoin d'un encodage rapide (l'outil privilégie la qualité, pas la vitesse)
 
 ---
 
 ## ⚡ Pourquoi un encodeur adaptatif dédié ?
 
-| | Encodeurs génériques | ffmpeg manuel | **Adaptive Video Encoder** |
-|---|---|---|---|
-| Dolby Vision Profil 7 | ❌ Cassé | ⚠️ Possible avec `dovi_tool` + scripts | ✅ Automatique (downgrade 7→8.1) |
-| HDR10+ dynamique | ❌ Ignoré | ⚠️ Si vous extrayez le JSON à la main | ✅ Auto-détecté et réinjecté |
+|  | Encodeurs génériques | ffmpeg manuel | **Adaptive Video Encoder** |
+| --- | --- | --- | --- |
+| Dolby Vision Profil 7 | ❌ Cassé | ⚠️ Possible avec `dovi_tool` + scripts | ✅ Automatique |
+| Débruitage bruit/grain | ❌ Lissage uniforme | ⚠️ Manuel, si vous savez quoi activer | ✅ Adaptatif, dosé par source (préservable) |
 | Paramètres adaptés *par vidéo* | ❌ Préréglages fixes | ⚠️ Si vous testez vous-même | ✅ Analyse image par image |
 | HDR10 / HLG préservé | ⚠️ Parfois | ⚠️ Si vous savez quoi activer | ✅ Toujours |
-| Débruitage adaptatif | ❌ Force fixe ou absent | ⚠️ Manuel, force globale | ✅ Force calibrée selon les métriques, ou moteur forcé par l'utilisateur |
-| Normalisation EBU R128 | ❌ Absent ou approximatif | ⚠️ Mesure puis ré-encodage manuel | ✅ Two-pass automatique |
 | Détection des bandes noires | ✅ | ⚠️ Manuel | ✅ Automatique |
 | Temps de configuration | 5 min | 1-3 h par film | **0 min** |
 
@@ -65,11 +69,13 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 
 Beaucoup d'utilisateurs pensent à tort que cet outil est réservé à la 4K. **Ce n'est pas le cas.** Adaptive Video Encoder brille particulièrement sur les remux Blu-ray 1080p pour 3 raisons :
 
-**1. Préréglages x265 finement adaptés à la 1080p.** L'outil ajuste automatiquement la taille des blocs (`ctu=32`, `qg-size=8`) sur le contenu sub-1440p, ce qui suit mieux le détail psy-visuel que les défauts x265 conçus pour 4K. Sur du 1440p et plus, il bascule sur les blocs plus grands (`ctu=64`, `qg-size=16`) attendus à cette échelle.
+**1. Débruitage adaptatif du grain et du bruit.** Plutôt qu'un lissage uniforme appliqué partout, l'analyse image par image dose le débruitage selon la source et le mouvement, pour nettoyer sans écraser le détail. Et si vous voulez garder le grain cinématique (films classiques, horreur, films d'auteur récents en 35mm), `--denoise-preserve-grain` ou `--no-denoise` le préservent.
 
-**2. Détection adaptative des scènes complexes.** Sur un film d'action 1080p, les scènes de combat ont une complexité radicalement différente des dialogues. L'analyse image par image ajuste les paramètres x265 (preset, CRF, psy-rd, AQ-mode) en conséquence, là où les encodeurs génériques utilisent les mêmes réglages du début à la fin.
+**2. Détection adaptative des scènes complexes.** Sur un film d'action 1080p, les scènes de combat ont une complexité radicalement différente des dialogues. L'analyse image par image ajuste les paramètres x265 en conséquence, là où les encodeurs génériques utilisent les mêmes réglages du début à la fin.
 
-**3. Préservation des métadonnées HDR10 / HDR10+ 1080p.** Certains Blu-rays récents ont du HDR10 voire du HDR10+ en 1080p. Adaptive Encoder préserve tout : master display, MaxCLL/MaxFALL, primaires de couleur, et métadonnées dynamiques.
+**3. Préservation des métadonnées HDR10 1080p.** Certains Blu-rays récents ont le HDR10 en 1080p. Adaptive Encoder préserve tout : master display, MaxCLL/MaxFALL, primaires de couleur.
+
+**Moins pertinent pour :** le contenu numérique récent avec une image propre (comédies romantiques, sitcoms, documentaires en intérieur). Ces sources n'ont ni grain ni détail complexe à préserver.
 
 ---
 
@@ -77,8 +83,8 @@ Beaucoup d'utilisateurs pensent à tort que cet outil est réservé à la 4K. **
 
 Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la qualité.**
 
-| | GPU (NVENC / QSV / AMF) | **CPU (x265)** |
-|---|---|---|
+|  | GPU (NVENC / QSV / AMF) | **CPU (x265)** |
+| --- | --- | --- |
 | Vitesse d'encodage | ⚡⚡⚡ Rapide | 🐢 Lent |
 | Qualité par bit | ⚠️ Correct | ✅ Excellent |
 | Taille finale du fichier | ⚠️ Plus lourde | ✅ Plus légère |
@@ -90,153 +96,186 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 
 ## ✨ Ce que ça fait
 
-- 🔍 **Analyse adaptative image par image** — détecte le bruit, le grain, la complexité spatiale, la densité de contours, l'activité temporelle, la fraction de pixels sombres
-- 🎚️ **Paramètres x265 calibrés sur les métriques** — preset (entre `medium` et `veryslow`), CRF, psy-rd, psy-rdoq, aq-mode, aq-strength, deblock, SAO, ref, bframes, me, rdoq-level — tous ajustés au contenu réel
-- 📐 **Adaptation à la résolution** — `ctu`, `qg-size` et cap VBV auto-réglés selon les pixels effectifs (post-crop)
-- 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites via `dovi_tool`, préservées, réinjectées. Profil 7 converti en 8.1 par défaut (compatible avec la majorité des lecteurs DV). Option `--preserve-dv-profile` pour sortir en HDR10 plutôt qu'accepter la conversion.
-- 🌟 **HDR10+ (SMPTE 2094-40)** — métadonnées dynamiques auto-détectées via `hdr10plus_tool`, extraites en JSON puis réinjectées dans le bitstream HEVC via le paramètre x265 `dhdr10-info`. DV et HDR10+ coexistent dans le même bitstream HEVC : les afficheurs Dolby Vision utilisent le RPU, les afficheurs HDR10+ (ex. Samsung) utilisent les SEI SMPTE 2094-40.
+- 🔍 **Analyse adaptative** — détecte le bruit, le grain, la complexité, la densité de contours pour régler x265
+- 📺 **Dolby Vision Profil 5, 7, 8.x** — métadonnées extraites, préservées, réinjectées
 - 🎨 **HDR10 et HLG** — primaires de couleur, transferts, master display, MaxCLL/MaxFALL préservés
-- 🌑 **Débruitage adaptatif** — force calibrée automatiquement à partir du bruit/grain mesurés. En mode `auto` (défaut), si le score combiné est sous le seuil (~0.08), aucun filtre n'est appliqué. Choisir un moteur explicitement (`nlmeans`, `bm3d`, `hybrid`) **garantit que le débruitage est toujours appliqué**, même sur une source propre — seul `auto` peut décider de ne rien faire. Option `--denoise-preserve-grain` pour ne lisser qu'une fraction de la texture.
-- 🔊 **Normalisation audio EBU R128** — mode `single-pass` (loudnorm dynamique) ou `two-pass` (mesure puis correction linéaire — recommandé). Cible LUFS configurable.
+- 🎞️ **Débruitage adaptatif** — bruit et grain nettoyés automatiquement (moteur hqdn3d, dosage selon la source, sensible au mouvement) ; préservation du grain en option (`--denoise-preserve-grain`)
 - ✂️ **Recadrage intelligent** — détecte les bandes noires sans couper accidentellement le contenu
-- 🎞️ **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte (sauf si normalisation ou downmix actif)
+- 🔊 **Toutes les pistes audio et sous-titres** copiées par défaut, zéro perte
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
-- 📐 **Résolutions** — 480p à 8K
+- 📐 **Résolutions** — 480p à 8K (excellent pour 1080p ET 4K)
+- 📦 **Binaire unique** — ffmpeg et ffprobe intégrés. Aucune dépendance à installer.
 
 ---
 
 ## 💻 Plateformes supportées
 
-| Plateforme | Interface graphique | Ligne de commande | Notes |
-|---|---|---|---|
-| 🪟 Windows 10/11 (x64) | ✅ GUI incluse | ✅ CLI disponible | |
-| 🐧 Linux (x64) | ✅ GUI incluse | ✅ CLI disponible | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
-| 🍎 macOS (Apple Silicon) | ✅ GUI incluse | ✅ CLI disponible | M1, M2, M3 — binaire natif arm64 |
+| Plateforme | Statut | Notes |
+| --- | --- | --- |
+| 🐧 Linux (x64) | ✅ Supporté | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
+| 🪟 Windows 10/11 (x64) | ✅ Supporté | PowerShell ou CMD |
+| 🍎 macOS (Apple Silicon) | ✅ Supporté | M1, M2, M3 — binaire natif arm64 |
 
 ---
 
-## 💰 Tarif
+## ☕ Cet outil est gratuit — offrez-moi un café si ça vous a aidé !
 
-## **$49.99 USD**
-**Paiement unique. Licence à vie. Essai gratuit 7 jours.**
+Adaptive Video Encoder est entièrement gratuit. Si il vous a fait gagner du temps ou amélioré votre bibliothèque, un petit café est toujours apprécié — mais jamais obligatoire.
 
-Pas d'abonnement. Pas de DRM agressif. Testez l'outil pendant 7 jours avant de décider.
-
-👉 **[Essayer gratuitement 7 jours](https://adaptive-encoder.com)** | **[Acheter — $49.99 USD](https://adaptive-encoder.com)**
+👉 **[M'offrir un café](https://paypal.me/thegrunge45)** — totalement optionnel, toujours apprécié ☕
 
 💬 **Questions ou retours ? Rejoignez le [Discord](https://discord.gg/UHrEn2H6jD)** — avec plaisir.
 
 ---
 
-## 📖 Toutes les options
+## ⚙️ Installation et prérequis
 
-```
--h, --help                        Affiche l'aide et quitte
--o, --output OUTPUT               Fichier vidéo de sortie (défaut : <entrée>_adaptive.mkv)
---auto-rename                     Si le fichier de sortie est verrouillé, utilise automatiquement
-                                  un nom alternatif (_v2, _v3, ...) au lieu d'abandonner.
+ffmpeg et ffprobe sont intégrés — inutile de les installer séparément. Cependant, **deux outils doivent être installés** avant d'utiliser l'encodeur :
 
-[ Paramètres vidéo ]
---force-fps FORCE_FPS             Force la conversion de fréquence d'images (ex. 23.976)
---max-samples MAX_SAMPLES         Nombre max d'images à échantillonner pour l'analyse
---target-hours TARGET_HOURS       Durée de secours (h) si ffprobe ne peut pas la déterminer
---crop-samples CROP_SAMPLES       Nombre de points temporels pour la détection de recadrage
---no-crop-detect                  Désactive la détection automatique des bandes noires
---base-crf BASE_CRF               Décale la base du CRF adaptatif (défaut : 22.0)
---downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR via
-                                  libplacebo (BT.2390) ou zscale+tonemap=mobius en fallback
+### 1. mkvmerge — requis pour la sortie MKV
 
-[ Débit & Préréglages ]
---max-bitrate MAX_BITRATE         Force le débit max VBV (kbps)
---vbv-bufsize VBV_BUFSIZE         Taille optionnelle du buffer VBV (kbits)
---vbv                             Active le plafonnement automatique du débit VBV
---no-veryslow                     Limite les préréglages à 'slower' au lieu de 'veryslow'
---force-tune {grain,animation}    Force le preset tune x265
+| Plateforme | Installation |
+| --- | --- |
+| 🐧 Linux | `sudo apt-get install mkvtoolnix` |
+| 🍎 macOS | `brew install mkvtoolnix` |
+| 🪟 Windows | Téléchargez [MKVToolNix](https://mkvtoolnix.download/downloads.html), installez-le, puis copiez `mkvmerge.exe` depuis `C:\Program Files\MKVToolNix\` dans le **même dossier** que `adaptive-encoder.exe` |
 
-[ Dolby Vision & HDR ]
---no-dolby-vision                 Ignore les métadonnées Dolby Vision, encode en HDR10 seul
---preserve-dv-profile             Ignore le Dolby Vision si le profil source ne peut pas être
-                                  reproduit par x265, au lieu de dégrader en 8.1
---temp-dir TEMP_DIR               Dossier pour les fichiers temporaires DV
---no-hdr10plus                    Ignore les métadonnées dynamiques HDR10+
+### 2. dovi_tool — requis pour le Dolby Vision
 
-[ Réduction du bruit ]
---no-denoise                      Désactive la réduction de bruit adaptative
---denoise-strength STRENGTH       Force la force du débruitage (0.0=off, 1.0=max)
---denoise-preserve-grain          Débruitage 40% plus doux qui préserve le grain
---denoise-engine {auto,nlmeans,bm3d,hybrid}
-                                  Choisit le moteur de débruitage (défaut : auto)
+| Plateforme | Installation |
+| --- | --- |
+| 🐧 Linux | `wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz && tar -xzf dovi_tool-*.tar.gz && chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🍎 macOS | Téléchargez depuis [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), puis `chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🪟 Windows | Téléchargez `dovi_tool-x86_64-pc-windows-msvc.zip` depuis [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), extrayez et placez `dovi_tool.exe` dans le **même dossier** que `adaptive-encoder.exe` |
 
-[ Audio & Sous-titres ]
---no-audio                        Supprime les pistes audio (copiées par défaut)
---no-subs                         Supprime les sous-titres (copiés par défaut)
---audio-lang AUDIO_LANG           Garde uniquement certaines langues audio (ex. 'fre,eng')
---downmix-audio                   Mixe les pistes 7.1/Atmos en 5.1 ou 2.0
---normalize-audio {off,single-pass,two-pass}
-                                  Normalisation EBU R128 (off par défaut)
---normalize-audio-target LUFS     Cible de loudness en LUFS (défaut : -16.0)
+Sans `dovi_tool`, l'encodeur bascule sur HDR10 uniquement.
 
-[ Système ]
---verbose                         Affiche les détails techniques de l'analyse adaptative
---dry-run                         Affiche l'analyse et la commande sans encoder
-```
+### 3. Premier lancement — macOS uniquement
+
+macOS bloque les binaires non signés. Exécutez ceci **une seule fois** après le téléchargement :
+
+    xattr -d com.apple.quarantine ./adaptive-encoder
+    chmod +x ./adaptive-encoder
+
+Après ça, macOS ne vous avertira plus jamais pour ce fichier.
 
 ---
 
-## 🛠️ Dépannage
+## 🚀 Démarrage rapide
 
-**Le Dolby Vision ou le HDR10+ ne fonctionne pas.**
-Lancez un encodage avec `--dry-run` (ou le mode test dans la GUI) pour vérifier que les métadonnées sont correctement détectées. Si le problème persiste, rejoignez le Discord pour obtenir de l'aide.
+    # 🐧 Linux / 🍎 macOS
+    chmod +x ./adaptive-encoder
+    ./adaptive-encoder "mon_film.mkv"
 
-**L'encodage prend des heures par film — c'est normal ?**
-Oui. `veryslow` est intentionnellement lent pour maximiser la qualité. Utilisez l'option `--no-veryslow` (ou l'équivalent dans la GUI) pour basculer sur `slower` (env. 2× plus rapide).
+    # 🪟 Windows (PowerShell ou CMD)
+    .\adaptive-encoder.exe "mon_film.mkv"
 
-**Espace disque saturé pendant l'encodage Dolby Vision.**
-Utilisez l'option `--temp-dir` pour rediriger les fichiers temporaires vers un disque avec de l'espace libre.
+> 💡 **Astuce Windows :** Shift + clic droit dans le dossier → "Ouvrir la fenêtre PowerShell ici"
 
-**Le débruitage semble ignoré malgré un forçage.**
-Vérifiez la ligne `denoise:` affichée dans `▶ Selecting parameters…` : préfixe `auto→` = le mode auto a choisi pour vous ; pas de préfixe = votre choix est appliqué ; `disabled` = le débruitage est désactivé.
+**Mode test — analyser sans encoder :**
 
-**macOS bloque le lancement.**
-Exécutez `xattr -d com.apple.quarantine ./adaptive-encoder-gui` une seule fois après le téléchargement.
+    ./adaptive-encoder "mon_film.mkv" --dry-run
+
+---
+
+## 🗂️ Encoder une bibliothèque entière
+
+    # 🐧 Linux / 🍎 macOS
+    for file in *.mkv; do
+        ./adaptive-encoder "$file"
+    done
+
+    # 🪟 Windows
+    Get-ChildItem *.mkv | ForEach-Object {
+        .\adaptive-encoder.exe $_.FullName
+    }
+
+> 💡 **Conseil :** lancez d'abord avec `--dry-run` sur un seul fichier pour vérifier que le Dolby Vision et le HDR sont correctement détectés.
+
+---
+
+## 📖 Toutes les options
+
+    -h, --help                        Affiche l'aide et quitte
+    -o, --output OUTPUT               Fichier vidéo de sortie (défaut : <entrée>_adaptive.mkv)
+
+    [ Paramètres vidéo ]
+    --force-fps FORCE_FPS             Force la conversion de fréquence d'images (ex. 23.976).
+                                      Assure une sync A/V parfaite lors du remux Dolby Vision.
+    --max-samples MAX_SAMPLES         Nombre max d'images à échantillonner pour l'analyse
+    --target-hours TARGET_HOURS       Durée de secours (h) si ffprobe ne peut pas la déterminer
+    --crop-samples CROP_SAMPLES       Nombre de points temporels pour la détection de recadrage
+    --no-crop-detect                  Désactive la détection automatique des bandes noires
+    --downscale-1080p-sdr             Réduit la source à 1080p et convertit en SDR.
+                                      Applique un tone mapping pour les écrans non-HDR.
+    --base-crf BASE_CRF               Décale la base CRF adaptative (défaut : 22.0).
+                                      Plus bas = meilleure qualité, plus haut = fichier plus petit.
+
+    [ Débit & Préréglages ]
+    --max-bitrate MAX_BITRATE         Force le débit max VBV (kbps)
+    --vbv-bufsize VBV_BUFSIZE         Taille optionnelle du buffer VBV (kbits)
+    --no-vbv                          Désactive le plafonnement automatique VBV
+    --no-veryslow                     Limite les préréglages à 'slower' au lieu de 'veryslow'
+    --force-tune {grain,animation}    Force le preset tune x265. 'grain' préserve la structure
+                                      du grain (psy-rd plus élevé). 'animation' optimise pour
+                                      les zones plates et les bords nets.
+
+    [ Dolby Vision & HDR ]
+    --no-dolby-vision                 Ignore les métadonnées Dolby Vision, encode en HDR10 seul
+    --preserve-dv-profile             Ignore le Dolby Vision si le profil source ne peut pas être
+                                      reproduit par x265 (ex. profil 7.x), au lieu de dégrader
+                                      silencieusement en 8.1. Sort en HDR10 dans ce cas.
+    --temp-dir TEMP_DIR               Dossier pour les fichiers temporaires DV pour éviter la
+                                      saturation RAM de /tmp. Crucial sur Linux avec tmpfs.
+
+    [ Réduction du bruit ]
+    --no-denoise                      Désactive la réduction de bruit adaptative (préserve le grain)
+    --denoise-strength DENOISE_STRENGTH  Force la force du débruitage (0.0=off, 1.0=max). Défaut : auto
+    --denoise-preserve-grain          Débruitage plus doux qui préserve une partie de la texture du grain
+    --denoise-engine {auto,hqdn3d}    Moteur de débruitage. hqdn3d : passe unique spatiale+temporelle
+                                      rapide, sensible au mouvement. auto : force adaptative selon la
+                                      source (le grain visible est nettoyé ; sources propres ignorées).
+
+    [ Audio & Sous-titres ]
+    --no-audio                        Supprime les pistes audio (copiées par défaut)
+    --no-subs                         Supprime les sous-titres (copiés par défaut)
+    --audio-lang AUDIO_LANG           Garde uniquement certaines langues audio (ex. 'fre,eng').
+                                      Supprime les doublages indésirables pour économiser de l'espace.
+    --downmix-audio                   Mixe les pistes 7.1/Atmos lourdes en 5.1 ou 2.0 standard.
+
+    [ Système ]
+    --verbose                         Affiche les détails techniques de l'analyse adaptative
+    --dry-run                         Affiche l'analyse et la commande sans encoder
 
 ---
 
 ## ❓ FAQ
 
-**Quelles plateformes sont supportées ?**
-Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). Interface graphique et ligne de commande disponibles sur les trois plateformes.
+**Quelles plateformes sont supportées ?** Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). ffmpeg et ffprobe sont intégrés — seuls mkvmerge et dovi_tool doivent être installés séparément.
 
-**C'est seulement pour la 4K ?**
-Non, l'outil est excellent en 1080p aussi. Les paramètres x265 (`ctu`, `qg-size`, preset) sont adaptés automatiquement à la résolution effective.
+**C'est seulement pour la 4K ?** Non, l'outil est excellent en 1080p aussi. Particulièrement sur les remux Blu-ray (classiques, horreur, films d'auteur 35mm) ou les scènes complexes (action, sci-fi).
 
-**Le Dolby Vision et le HDR10+ fonctionnent automatiquement ?**
-Oui. Le binaire détecte automatiquement les sources Dolby Vision (Profil 5/7/8.x) et HDR10+ (SMPTE 2094-40) puis préserve les métadonnées. Si la source contient les deux, les deux métadonnées coexistent dans le bitstream HEVC.
+**Dois-je installer ffmpeg séparément ?** Non. ffmpeg et ffprobe sont intégrés dans le binaire. Téléchargez, lancez, c'est tout.
 
-**Le débruitage est-il actif par défaut ? Mon grain va-t-il être touché ?**
-Le débruitage adaptatif est activé par défaut en mode `auto`. Si le score combiné est sous ~0.08, aucun filtre n'est appliqué. Pour garantir zéro filtre, utilisez `--no-denoise`. Pour un compromis, utilisez `--denoise-preserve-grain`.
+**Le grain est-il préservé ou nettoyé ?** Par défaut, l'outil applique un débruitage adaptatif (dosé selon la source, sensible au mouvement) qui nettoie le bruit et le grain visibles. Pour conserver le grain, utilisez `--denoise-preserve-grain` (débruitage doux) ou `--no-denoise` (aucun débruitage).
 
-**Pourquoi mes fichiers sont-ils plus lourds qu'avec d'autres encodeurs ?**
-Choix de conception délibéré — préservation du détail et des métadonnées HDR. Pour limiter la taille, utilisez `--vbv`, `--max-bitrate`, ou augmentez `--base-crf`.
+**Le Dolby Vision ne fonctionne pas — pourquoi ?** `dovi_tool` doit être installé séparément (voir Installation ci-dessus). Sans lui, l'encodeur bascule sur HDR10 uniquement.
 
-**Échelle CRF rapide :**
+**La conversion Profil 7 → 8.1 fonctionne ?** Oui, c'est le comportement par défaut. Le Profil 7 (FEL/MEL) est extrait et réinjecté en 8.1, compatible avec la plupart des lecteurs Dolby Vision modernes.
 
-| `--base-crf` | Effet | Cas d'usage |
-|---|---|---|
-| 18 | Quasi-transparent, fichier très lourd | Archivage maximal |
-| 20 | Excellent, légèrement plus léger | Archivage qualité, proche-remux |
-| 22 | Bon compromis qualité/taille | Usage général |
-| 24 | Visible sur scènes complexes | Réduction de taille, streaming perso |
-| 26+ | Artefacts visibles | À éviter sauf contrainte espace |
+**Pourquoi mes fichiers sont-ils plus lourds qu'avec d'autres encodeurs ?** Choix de conception délibéré — qualité proche du remux et préservation des métadonnées HDR. Le débruitage adaptatif aide à la compression, mais l'outil reste orienté qualité. Pour limiter davantage la taille, utilisez `--max-bitrate`.
 
-Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
+**Vitesse d'encodage ?** L'outil utilise les préréglages x265 `slower` ou `veryslow` — pas un encodeur rapide, un *bon* encodeur. Pour un encodage plus rapide, utilisez `--no-veryslow`.
+
+**Et si ça ne fonctionne pas sur mes fichiers ?** Ouvrez une issue sur GitHub ou posez la question sur Discord — avec plaisir.
 
 ---
 
 ## 📧 Support
 
-- 💬 **Discord** (réponses rapides) : [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
-- 📧 **Email** : [osx300@gmail.com](mailto:osx300@gmail.com)
+- 💬 **Discord** (réponses rapides) : <https://discord.gg/UHrEn2H6jD>
+- 📧 **Email** : <osx300@gmail.com>
+- ☕ **M'offrir un café** (optionnel) : [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
 
 ---
 ---
@@ -245,54 +284,58 @@ Règle empirique : **chaque +1 sur le CRF réduit la taille d'environ 20-25 %**.
 
 > **The H.265 encoder that doesn't break your Dolby Vision.**
 
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD) [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-PayPal-00457C?logo=paypal&logoColor=white)](https://paypal.me/thegrunge45)
 
 ---
 
 ## Re-encode your video library without quality compromise
 
-You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10, HDR10+ or HLG sources. You want to re-encode to H.265 to reclaim terabytes — without destroying the metadata that makes your movies display correctly on your OLED.
+You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or HLG sources. You want to re-encode to H.265 to reclaim terabytes — without destroying the metadata that makes your movies display correctly on your OLED.
 
-**The problem:** Most H.265 tools strip out Dolby Vision Profile 7, ignore HDR10+ dynamic metadata, or use identical parameters for every video. Manual ffmpeg requires hours of testing to find the right parameters — and those parameters change for every source (grain, noise, motion, complexity).
+**The problem:** Most H.265 tools strip out Dolby Vision Profile 7 metadata, or smooth grain with blanket, untuned settings. Manual ffmpeg requires hours of testing to find the right parameters — and those parameters change for every video (grain, noise, motion, complexity).
 
-**The solution:** Adaptive Video Encoder analyzes each video frame by frame *before* encoding, automatically picks the best x265 parameters, and fully preserves your Dolby Vision (Profile 5, 7, 8.x), HDR10+ (SMPTE 2094-40), HDR10 and HLG metadata.
+**The solution:** Adaptive Video Encoder analyzes each video frame by frame *before* encoding, automatically picks the best x265 parameters, doses adaptive denoising to the source, and fully preserves your Dolby Vision (Profile 5, 7, 8.x), HDR10 and HLG metadata.
 
-> 💡 **Philosophy:** Adaptive Video Encoder prioritizes **preservation of detail and HDR metadata** over aggressive compression. The goal is near-remux quality, not the absolute best size/quality ratio.
+> 💡 **Philosophy:** Adaptive Video Encoder aims for near-remux quality and **full HDR-metadata preservation**. Noise and grain are **cleaned automatically** and adaptively — dosed per source and motion-aware — without crushing detail. Full grain preservation stays available on demand (`--denoise-preserve-grain`, `--no-denoise`).
 
 ---
 
 ## 🎯 Built for you if...
 
 **1080p Blu-ray libraries:**
-- You archive 1080p Blu-ray remuxes and want maximum quality
+
+- You archive 1080p Blu-ray remuxes and want clean, adaptive denoising dosed to the source (or grain preservation on demand)
 - You have HDR10 1080p sources that generic encoders handle poorly
-- You want to preserve detail in complex scenes (action, fantasy, sci-fi)
+- You want to preserve every fine detail of complex scenes (action, fantasy, sci-fi)
 
 **4K UHD libraries:**
-- You archive UHD Blu-rays with Dolby Vision or HDR10+ and want maximum quality
+
+- You archive UHD Blu-rays with Dolby Vision and want maximum quality
 - You handle HDR10 or HLG without manually calibrating each film
 
 **All formats:**
+
 - You value image quality over disk space savings
+- You're comfortable with the command line
 - You're tired of tweaking x265 parameters and comparing 12 versions of the same film
 
 ## ⚠️ Not for you if...
 
 - You're looking for maximum compression to save disk space
+- You mostly encode simple SDR content without grain (recent indoor comedies, smooth animation, talking heads) — for those cases, simpler tools often give better compression ratios
+- You want a GUI
 - You need fast encoding (the tool prioritizes quality, not speed)
 
 ---
 
 ## ⚡ Why a dedicated adaptive encoder?
 
-| | Generic encoders | Manual ffmpeg | **Adaptive Video Encoder** |
-|---|---|---|---|
-| Dolby Vision Profile 7 | ❌ Broken | ⚠️ Possible with `dovi_tool` + scripting | ✅ Automatic (7→8.1 downgrade) |
-| HDR10+ dynamic metadata | ❌ Stripped | ⚠️ If you extract the JSON manually | ✅ Auto-detected and reinjected |
+|  | Generic encoders | Manual ffmpeg | **Adaptive Video Encoder** |
+| --- | --- | --- | --- |
+| Dolby Vision Profile 7 | ❌ Broken | ⚠️ Possible with `dovi_tool` + scripting | ✅ Automatic |
+| Noise/grain denoise | ❌ Blanket smoothing | ⚠️ Manual, if you know what to flag | ✅ Adaptive, per-source (preservable) |
 | Settings adapted *per video* | ❌ Fixed presets | ⚠️ If you test yourself | ✅ Frame-by-frame analysis |
 | HDR10 / HLG preserved | ⚠️ Sometimes | ⚠️ If you know what to flag | ✅ Always |
-| Adaptive denoising | ❌ Fixed strength or absent | ⚠️ Manual, global strength | ✅ Strength calibrated from detected metrics, or engine forced by user |
-| EBU R128 normalization | ❌ Absent or approximate | ⚠️ Measure then manual re-encode | ✅ Two-pass automatic |
 | Black bar detection | ✅ | ⚠️ Manual | ✅ Automatic |
 | Setup time | 5 min | 1-3 h per film | **0 min** |
 
@@ -302,11 +345,13 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10, HD
 
 Many users mistakenly think this tool is only for 4K. **It's not.** Adaptive Video Encoder shines particularly well on 1080p Blu-ray remuxes for 3 reasons:
 
-**1. x265 parameters finely tuned for 1080p.** The tool automatically adjusts block sizes (`ctu=32`, `qg-size=8`) on sub-1440p content, which tracks psy-visual detail better than the x265 defaults designed for 4K. On 1440p and above, it switches to the larger blocks (`ctu=64`, `qg-size=16`) expected at that scale.
+**1. Adaptive grain and noise denoising.** Instead of blanket smoothing applied everywhere, frame-by-frame analysis doses denoising to the source and motion, cleaning without crushing detail. And if you want to keep the cinematic grain (classic films, horror, recent 35mm auteur films), `--denoise-preserve-grain` or `--no-denoise` preserve it.
 
-**2. Adaptive complex scene detection.** On a 1080p action film, fight scenes have radically different complexity than dialogue. Frame-by-frame analysis adjusts x265 parameters (preset, CRF, psy-rd, AQ-mode) accordingly, where generic encoders use the same settings start to finish.
+**2. Adaptive complex scene detection.** On a 1080p action film, fight scenes have radically different complexity than dialogue. Frame-by-frame analysis adjusts x265 parameters accordingly, where generic encoders use the same settings start to finish.
 
-**3. 1080p HDR10 / HDR10+ metadata preservation.** Some recent Blu-rays have HDR10 or even HDR10+ in 1080p. Adaptive Encoder preserves everything: master display, MaxCLL/MaxFALL, color primaries, and dynamic metadata.
+**3. 1080p HDR10 metadata preservation.** Some recent Blu-rays have HDR10 in 1080p. Adaptive Encoder preserves everything: master display, MaxCLL/MaxFALL, color primaries.
+
+**Less relevant for:** recently-shot digital content with clean image (romantic comedies, sitcoms, indoor documentaries). Those sources have neither grain nor complex detail to preserve.
 
 ---
 
@@ -314,8 +359,8 @@ Many users mistakenly think this tool is only for 4K. **It's not.** Adaptive Vid
 
 Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 
-| | GPU (NVENC / QSV / AMF) | **CPU (x265)** |
-|---|---|---|
+|  | GPU (NVENC / QSV / AMF) | **CPU (x265)** |
+| --- | --- | --- |
 | Encoding speed | ⚡⚡⚡ Fast | 🐢 Slow |
 | Quality per bit | ⚠️ Decent | ✅ Excellent |
 | Final file size | ⚠️ Larger | ✅ Smaller |
@@ -327,149 +372,183 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 
 ## ✨ What it does
 
-- 🔍 **Frame-by-frame adaptive analysis** — measures noise, grain, spatial complexity, edge density, temporal activity, dark-pixel fraction
-- 🎚️ **x265 parameters tuned to the metrics** — preset (between `medium` and `veryslow`), CRF, psy-rd, psy-rdoq, aq-mode, aq-strength, deblock, SAO, ref, bframes, me, rdoq-level — all adjusted to the actual content
-- 📐 **Resolution-aware** — `ctu`, `qg-size` and VBV cap auto-tuned from effective pixels (post-crop)
-- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted via `dovi_tool`, preserved, reinjected. Profile 7 converted to 8.1 by default. `--preserve-dv-profile` outputs HDR10 instead of accepting the conversion.
-- 🌟 **HDR10+ (SMPTE 2094-40)** — dynamic metadata auto-detected via `hdr10plus_tool`, extracted to JSON then reinjected into the HEVC bitstream. DV and HDR10+ coexist in the same HEVC bitstream.
+- 🔍 **Adaptive analysis** — detects noise, grain, complexity, edge density to tune x265
+- 📺 **Dolby Vision Profile 5, 7, 8.x** — metadata extracted, preserved, reinjected
 - 🎨 **HDR10 and HLG** — color primaries, transfers, master display, MaxCLL/MaxFALL preserved
-- 🌑 **Adaptive denoising** — strength auto-calibrated from measured noise/grain. In `auto` mode (default), if the combined score is below threshold (~0.08), no filter is applied. Picking an engine explicitly (`nlmeans`, `bm3d`, `hybrid`) **guarantees denoising is always applied**, even on clean sources.
-- 🔊 **EBU R128 audio normalization** — `single-pass` or `two-pass` (recommended). Configurable LUFS target.
+- 🎞️ **Adaptive denoising** — noise and grain cleaned automatically (hqdn3d engine, per-source dosing, motion-aware); grain preservation optional (`--denoise-preserve-grain`)
 - ✂️ **Smart crop** — detects black bars without accidentally cutting content
-- 🎞️ **All audio and subtitle tracks** copied by default, zero loss (unless normalization or downmix active)
+- 🔊 **All audio and subtitle tracks** copied by default, zero loss
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
-- 📐 **Resolutions** — 480p to 8K
+- 📐 **Resolutions** — 480p to 8K (excellent for 1080p AND 4K)
+- 📦 **Single binary** — ffmpeg and ffprobe bundled. No dependencies to install.
 
 ---
 
 ## 💻 Platform support
 
-| Platform | GUI | CLI | Notes |
-|---|---|---|---|
-| 🪟 Windows 10/11 (x64) | ✅ Included | ✅ Available | |
-| 🐧 Linux (x64) | ✅ Included | ✅ Available | Ubuntu 22.04+, Fedora 40+ |
-| 🍎 macOS (Apple Silicon) | ✅ Included | ✅ Available | M1, M2, M3 — native arm64 binary |
+| Platform | Status | Notes |
+| --- | --- | --- |
+| 🐧 Linux (x64) | ✅ Supported | Ubuntu 22.04+, Debian 12+, Fedora 40+ |
+| 🪟 Windows 10/11 (x64) | ✅ Supported | PowerShell or CMD |
+| 🍎 macOS (Apple Silicon) | ✅ Supported | M1, M2, M3 — native arm64 binary |
 
 ---
 
-## 💰 Pricing
+## ☕ This tool is free — buy me a coffee if it helped!
 
-## **$49.99 USD**
-**One-time payment. Lifetime license. Free 7-day trial.**
+Adaptive Video Encoder is completely free to use. If it saved you time or improved your library, a small coffee is always appreciated — but never required.
 
-No subscription. No aggressive DRM. Try the tool for 7 days before you decide.
-
-👉 **[Try free for 7 days](https://adaptive-encoder.com)** | **[Buy — $49.99 USD](https://adaptive-encoder.com)**
+👉 **[Buy me a coffee](https://paypal.me/thegrunge45)** — totally optional, always appreciated ☕
 
 💬 **Questions or feedback? Join the [Discord](https://discord.gg/UHrEn2H6jD)** — happy to help.
 
 ---
 
-## 📖 All options
+## ⚙️ Installation & requirements
 
-```
--h, --help                        Display this help message and exit
--o, --output OUTPUT               Output video file (default: <input>_adaptive.mkv)
---auto-rename                     If the output file is locked, automatically pick an
-                                  alternative name (_v2, _v3, ...) instead of aborting.
+ffmpeg and ffprobe are bundled — no need to install them separately. However, **two tools must be installed** before using the encoder:
 
-[ Video Settings ]
---force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976)
---max-samples MAX_SAMPLES         Max number of frames to sample for analysis
---target-hours TARGET_HOURS       Fallback duration (h) if ffprobe cannot determine it
---crop-samples CROP_SAMPLES       Number of time points for crop detection
---no-crop-detect                  Disable automatic black bar detection
---base-crf BASE_CRF               Shift the adaptive CRF baseline (default: 22.0)
---downscale-1080p-sdr             Downscale source to 1080p and convert to SDR via
-                                  libplacebo (BT.2390) or zscale+tonemap=mobius fallback
+### 1. mkvmerge — required for MKV output
 
-[ Bitrate & Presets ]
---max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps)
---vbv-bufsize VBV_BUFSIZE         Optional VBV buffer size (kbits)
---vbv                             Enable automatic VBV bitrate cap
---no-veryslow                     Limit presets to 'slower' instead of 'veryslow'
---force-tune {grain,animation}    Force x265 tune preset
+| Platform | Install |
+| --- | --- |
+| 🐧 Linux | `sudo apt-get install mkvtoolnix` |
+| 🍎 macOS | `brew install mkvtoolnix` |
+| 🪟 Windows | Download [MKVToolNix](https://mkvtoolnix.download/downloads.html), install it, then copy `mkvmerge.exe` from `C:\Program Files\MKVToolNix\` into the **same folder** as `adaptive-encoder.exe` |
 
-[ Dolby Vision & HDR ]
---no-dolby-vision                 Ignore Dolby Vision metadata, encode as HDR10 only
---preserve-dv-profile             Skip Dolby Vision if the source profile cannot be reproduced
---temp-dir TEMP_DIR               Directory for DV temp files
---no-hdr10plus                    Ignore HDR10+ dynamic metadata
+### 2. dovi_tool — required for Dolby Vision
 
-[ Noise Reduction ]
---no-denoise                      Disable the adaptive noise reduction
---denoise-strength STRENGTH       Override denoise strength (0.0=off, 1.0=max)
---denoise-preserve-grain          40% gentler denoise that preserves film grain texture
---denoise-engine {auto,nlmeans,bm3d,hybrid}
-                                  Pick the denoising engine (default: auto)
+| Platform | Install |
+| --- | --- |
+| 🐧 Linux | `wget https://github.com/quietvoid/dovi_tool/releases/download/2.3.1/dovi_tool-2.3.1-x86_64-unknown-linux-musl.tar.gz && tar -xzf dovi_tool-*.tar.gz && chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🍎 macOS | Download from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), then `chmod +x dovi_tool && sudo mv dovi_tool /usr/local/bin/` |
+| 🪟 Windows | Download `dovi_tool-x86_64-pc-windows-msvc.zip` from [github.com/quietvoid/dovi_tool/releases](https://github.com/quietvoid/dovi_tool/releases), extract and place `dovi_tool.exe` in the **same folder** as `adaptive-encoder.exe` |
 
-[ Audio & Subtitles ]
---no-audio                        Remove audio tracks (copied by default)
---no-subs                         Remove subtitle tracks (copied by default)
---audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'eng,fre')
---downmix-audio                   Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0
---normalize-audio {off,single-pass,two-pass}
-                                  Apply EBU R128 loudness normalization (off by default)
---normalize-audio-target LUFS     Integrated loudness target in LUFS (default: -16.0)
+Without `dovi_tool`, the encoder falls back to HDR10 only.
 
-[ System ]
---verbose                         Display technical details of adaptive analysis
---dry-run                         Display analysis and command without encoding
-```
+### 3. First launch — macOS only
+
+macOS blocks unsigned binaries. Run this **once** after downloading:
+
+    xattr -d com.apple.quarantine ./adaptive-encoder
+    chmod +x ./adaptive-encoder
+
+After that, macOS will never warn about this file again.
 
 ---
 
-## 🛠️ Troubleshooting
+## 🚀 Quick start
 
-**Dolby Vision or HDR10+ doesn't work.**
-Run an encode with `--dry-run` (or the test mode in the GUI) to verify metadata is correctly detected. If the issue persists, join the Discord for help.
+    # 🐧 Linux / 🍎 macOS
+    chmod +x ./adaptive-encoder
+    ./adaptive-encoder "my_movie.mkv"
 
-**Encoding takes hours per film — is that normal?**
-Yes. `veryslow` is intentionally slow to maximize quality. Use `--no-veryslow` (or the equivalent option in the GUI) to switch to `slower` (about 2× faster).
+    # 🪟 Windows (PowerShell or CMD)
+    .\adaptive-encoder.exe "my_movie.mkv"
 
-**Disk space saturated during Dolby Vision encoding.**
-Use `--temp-dir` to redirect temp files to a drive with free space.
+> 💡 **Windows tip:** Shift + right-click in the folder → "Open PowerShell window here"
 
-**Denoising seems ignored despite forcing it.**
-Check the `denoise:` line in `▶ Selecting parameters…`: `auto→` prefix = auto picked; no prefix = your choice applied; `disabled` = denoising is off.
+**Test mode — analyze without encoding:**
 
-**macOS blocks the launch.**
-Run `xattr -d com.apple.quarantine ./adaptive-encoder-gui` once after downloading.
+    ./adaptive-encoder "my_movie.mkv" --dry-run
+
+---
+
+## 🗂️ Batch encode an entire library
+
+    # 🐧 Linux / 🍎 macOS
+    for file in *.mkv; do
+        ./adaptive-encoder "$file"
+    done
+
+    # 🪟 Windows
+    Get-ChildItem *.mkv | ForEach-Object {
+        .\adaptive-encoder.exe $_.FullName
+    }
+
+> 💡 **Tip:** run with `--dry-run` on a single file first to verify Dolby Vision and HDR are correctly detected.
+
+---
+
+## 📖 All options
+
+    -h, --help                        Display this help message and exit
+    -o, --output OUTPUT               Output video file (default: <input>_adaptive.mkv)
+
+    [ Video Settings ]
+    --force-fps FORCE_FPS             Force video frame rate conversion (e.g., 23.976).
+                                      Ensures perfect A/V sync during Dolby Vision remux.
+    --max-samples MAX_SAMPLES         Max number of frames to sample for analysis
+    --target-hours TARGET_HOURS       Fallback duration (h) if ffprobe cannot determine it
+    --crop-samples CROP_SAMPLES       Number of time points for crop detection
+    --no-crop-detect                  Disable automatic black bar detection
+    --downscale-1080p-sdr             Downscale source to 1080p and convert to SDR.
+                                      Applies tone mapping for non-HDR display compatibility.
+    --base-crf BASE_CRF               Shift the adaptive CRF baseline (default: 22.0).
+                                      Lower is better quality, higher is smaller file size.
+
+    [ Bitrate & Presets ]
+    --max-bitrate MAX_BITRATE         Force VBV max bitrate (kbps)
+    --vbv-bufsize VBV_BUFSIZE         Optional VBV buffer size (kbits)
+    --no-vbv                          Disable automatic VBV bitrate capping
+    --no-veryslow                     Limit presets to 'slower' instead of 'veryslow'
+    --force-tune {grain,animation}    Force x265 tune preset. 'grain' preserves film grain
+                                      structure (higher psy-rd). 'animation' optimizes for
+                                      flat areas and sharp edges.
+
+    [ Dolby Vision & HDR ]
+    --no-dolby-vision                 Ignore Dolby Vision metadata, encode as HDR10 only
+    --preserve-dv-profile             Skip Dolby Vision if the source profile cannot be
+                                      reproduced by x265 (e.g. profile 7.x), instead of
+                                      silently downgrading to 8.1. Outputs HDR10 in that case.
+    --temp-dir TEMP_DIR               Directory for DV temp files to avoid /tmp RAM exhaustion.
+                                      Crucial for Linux systems using tmpfs for /tmp.
+
+    [ Noise Reduction ]
+    --no-denoise                      Disable adaptive noise reduction (preserves grain)
+    --denoise-strength DENOISE_STRENGTH  Override denoise strength (0.0=off, 1.0=max). Default: auto
+    --denoise-preserve-grain          Gentler denoise that preserves some film grain texture
+    --denoise-engine {auto,hqdn3d}    Denoise engine. hqdn3d: single fast spatial+temporal pass,
+                                      motion-aware. auto: source-adaptive strength (visible grain
+                                      is cleaned; clean sources are skipped).
+
+    [ Audio & Subtitles ]
+    --no-audio                        Remove audio tracks (copied by default)
+    --no-subs                         Remove subtitle tracks (copied by default)
+    --audio-lang AUDIO_LANG           Keep only specific audio languages (e.g., 'fre,eng').
+                                      Removes unwanted dubs to save space.
+    --downmix-audio                   Downmix heavy 7.1/Atmos tracks to standard 5.1 or 2.0.
+
+    [ System ]
+    --verbose                         Display technical details of adaptive analysis
+    --dry-run                         Display analysis and command without encoding
 
 ---
 
 ## ❓ FAQ
 
-**What platforms are supported?**
-Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). GUI and command line available on all three platforms.
+**What platforms are supported?** Windows 10/11 (x64), Linux (x64), and macOS Apple Silicon (M1/M2/M3). ffmpeg and ffprobe are bundled — only mkvmerge and dovi_tool need to be installed separately.
 
-**Is this only for 4K?**
-No, the tool is excellent for 1080p too. x265 parameters (`ctu`, `qg-size`, preset) are automatically tuned to the effective resolution.
+**Is this only for 4K?** No, the tool is excellent for 1080p too. Particularly on Blu-ray remuxes (classics, horror, 35mm auteur films) or complex scenes (action, sci-fi).
 
-**Do Dolby Vision and HDR10+ work automatically?**
-Yes. The binary auto-detects Dolby Vision (Profile 5/7/8.x) and HDR10+ (SMPTE 2094-40) sources. If a source carries both, they coexist in the HEVC bitstream.
+**Do I need to install ffmpeg separately?** No. ffmpeg and ffprobe are bundled inside the binary. Download, run, done.
 
-**Is denoising active by default? Will my grain be touched?**
-Adaptive denoising is enabled in `auto` mode. If the combined score is below ~0.08, no filter is applied. To guarantee zero filtering, use `--no-denoise`. For a compromise, use `--denoise-preserve-grain`.
+**Is grain preserved or cleaned?** By default the tool applies adaptive denoising (dosed per source, motion-aware) that cleans visible noise and grain. To keep the grain, use `--denoise-preserve-grain` (gentle denoise) or `--no-denoise` (no denoise at all).
 
-**Why are my files larger than with other encoders?**
-Intentional design choice — detail and HDR metadata preservation. Use `--vbv`, `--max-bitrate`, or raise `--base-crf` to reduce size.
+**Dolby Vision doesn't work — why?** `dovi_tool` must be installed separately (see Installation above). Without it, the encoder falls back to HDR10 only.
 
-**CRF quick reference:**
+**Does Profile 7 → 8.1 conversion work?** Yes, it's the default. Profile 7 (FEL/MEL) is extracted and reinjected as 8.1, compatible with most modern Dolby Vision players.
 
-| `--base-crf` | Effect | Use case |
-|---|---|---|
-| 18 | Near-transparent, very large file | Maximum archival |
-| 20 | Excellent, slightly lighter | Quality archival, near-remux |
-| 22 | Good quality/size balance | General use |
-| 24 | Visible on complex scenes | Size reduction, personal streaming |
-| 26+ | Visible artifacts | Avoid unless space-constrained |
+**Why are my files larger than with other encoders?** Intentional design choice — near-remux quality and HDR metadata preservation. Adaptive denoising does help compression, but the tool stays quality-oriented. To cap size further, use `--max-bitrate`.
 
-Rule of thumb: **each +1 on the CRF reduces file size by roughly 20-25%**.
+**Encoding speed?** The tool uses x265 `slower` or `veryslow` presets — not a fast encoder, a *good* one. For faster encoding use `--no-veryslow`.
+
+**What if it doesn't work for my files?** Open an issue on GitHub or ask on Discord — happy to help.
 
 ---
 
 ## 📧 Support
 
-- 💬 **Discord** (fast replies): [https://discord.gg/UHrEn2H6jD](https://discord.gg/UHrEn2H6jD)
-- 📧 **Email**: [osx300@gmail.com](mailto:osx300@gmail.com)
+- 💬 **Discord** (fast replies): <https://discord.gg/UHrEn2H6jD>
+- 📧 **Email**: <osx300@gmail.com>
+- ☕ **Buy me a coffee** (optional): [paypal.me/thegrunge45](https://paypal.me/thegrunge45)
