@@ -68,7 +68,8 @@ Soyons honnêtes d'entrée : Adaptive Encoder privilégie une **qualité proche 
 
 **🔬 Analyse & qualité**
 - Analyse image par image — paramètres x265 optimaux par vidéo
-- Préservation du grain de film (35 mm, films d'horreur, classiques)
+- Débruitage adaptatif **sensible au mouvement** avec gestion intelligente du grain — préservation du grain en option (35 mm, films d'horreur, classiques)
+- Anti-banding 10-bit automatique pour des dégradés sans bandes
 - Détection automatique des barres noires — sans couper le contenu
 - Encodage 10-bit, preset adaptatif de *fast* à *veryslow*
 
@@ -102,6 +103,20 @@ NVENC, QuickSync et AMF sont conçus pour la **vitesse**, pas la qualité. Parfa
 - NVENC est **figé dans le silicium** ; x265 reçoit des optimisations psychovisuelles depuis plus de 10 ans.
 
 Pour archiver, la vitesse n'a pas d'importance : on encode une fois, on regarde 100 fois.
+
+---
+
+## 🆕 Nouveautés de la dernière version
+
+Refonte complète du pipeline de débruitage, plus rapide et plus fin.
+
+- **Nouveau moteur unifié hqdn3d, sensible au mouvement** — un seul passage rapide qui répartit automatiquement le débruitage spatial et temporel selon le mouvement de chaque scène : fini les traînées sur les plans animés, le détail des plans fixes est préservé. (Remplace les anciens moteurs `nlmeans` / `bm3d`, beaucoup plus lents.)
+- **Dégrainage automatique plus intelligent** — en mode auto, les sources granuleuses ou bruitées sont désormais nettoyées, le grain pilotant la force du traitement (plafonnée pour rester sûre pour le détail). Les sources vraiment propres sont laissées intactes. Pour conserver le grain d'origine : `--no-denoise` ou `--denoise-preserve-grain`.
+- **Anti-banding automatique** — dès que le débruitage retire du grain, un anti-banding 10-bit se déclenche en fin de chaîne pour éviter l'apparition de bandes dans les dégradés.
+- **Analyse plus fiable** — les images quasi-noires (cartons de générique, fondus au noir) sont maintenant exclues du calcul des métriques, ce qui évite de fausser la détection du grain, du bruit et du mouvement.
+- **Interfaces graphiques alignées** — Windows, Linux et macOS partagent le même menu « Moteur » simplifié et les mêmes infobulles à jour.
+
+> Le débruitage reste **entièrement optionnel** : le menu **Moteur** (ou `--denoise-engine`) propose `auto` et `hqdn3d`, et vous gardez le contrôle total de la force via les options d'encodage.
 
 ---
 
@@ -144,7 +159,7 @@ Toutes les versions sont des **applications graphiques autonomes** — ffmpeg, f
 ## ❓ FAQ
 
 **Est-ce uniquement pour la 4K ?**
-Non, l'outil est aussi excellent en 1080p — surtout sur les remux Blu-ray avec grain (classiques, horreur, films d'auteur 35 mm) ou les scènes complexes. La plupart des encodeurs lissent le grain par défaut ; Adaptive Encoder le détecte et le préserve automatiquement, quelle que soit la résolution.
+Non, l'outil est aussi excellent en 1080p — surtout sur les remux Blu-ray avec grain (classiques, horreur, films d'auteur 35 mm) ou les scènes complexes. Contrairement aux encodeurs qui lissent le grain à l'aveugle, Adaptive Encoder le **détecte** et le traite intelligemment : en mode auto, il dégrain les sources granuleuses (avec anti-banding pour préserver les dégradés), et vous pouvez **conserver le grain d'origine** à tout moment via `--no-denoise` ou `--denoise-preserve-grain`.
 
 **Pourquoi mes fichiers sont-ils plus gros qu'avec d'autres encodeurs ?**
 C'est un choix délibéré. L'outil est calibré pour préserver au maximum le détail, le grain et les métadonnées HDR — même quand l'algorithme pourrait compresser davantage. Pour archiver, 8 Go proches du remux valent mieux que 5 Go « acceptables ». Vous pouvez toujours fixer un débit maximum dans les options d'encodage.
