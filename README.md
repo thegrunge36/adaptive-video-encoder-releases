@@ -40,14 +40,13 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 **Tous formats :**
 
 - Vous privilégiez la qualité d'image sur les économies d'espace disque
-- Vous êtes à l'aise avec la ligne de commande
+- Vous utilisez la ligne de commande ou l'interface graphique
 - Vous en avez marre de régler les paramètres x265 et de comparer 12 versions du même film
 
 ## ⚠️ Pas pour vous si...
 
 - Vous cherchez une compression maximale pour économiser l'espace disque
 - Vous encodez surtout du contenu SDR simple sans grain (comédies récentes en intérieur, animation fluide, talking heads) — dans ces cas, des outils plus simples donnent souvent de meilleurs taux de compression
-- Vous voulez une interface graphique
 - Vous avez besoin d'un encodage rapide (l'outil privilégie la qualité, pas la vitesse)
 
 ---
@@ -105,6 +104,7 @@ Réponse courte : **NVENC, QuickSync et AMF sont conçus pour la vitesse, pas la
 - 🎞️ **Formats supportés** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Résolutions** — 480p à 8K (excellent pour 1080p ET 4K)
 - 📦 **Binaire unique** — ffmpeg et ffprobe intégrés. Aucune dépendance à installer.
+- 🖥️ **Interface graphique** — disponible pour Windows, macOS et Linux, en plus de la ligne de commande.
 
 ---
 
@@ -316,14 +316,13 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 **All formats:**
 
 - You value image quality over disk space savings
-- You're comfortable with the command line
+- You use the command line or the graphical interface
 - You're tired of tweaking x265 parameters and comparing 12 versions of the same film
 
 ## ⚠️ Not for you if...
 
 - You're looking for maximum compression to save disk space
 - You mostly encode simple SDR content without grain (recent indoor comedies, smooth animation, talking heads) — for those cases, simpler tools often give better compression ratios
-- You want a GUI
 - You need fast encoding (the tool prioritizes quality, not speed)
 
 ---
@@ -381,6 +380,7 @@ Short answer: **NVENC, QuickSync and AMF are designed for speed, not quality.**
 - 🎞️ **Supported formats** — MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
 - 📐 **Resolutions** — 480p to 8K (excellent for 1080p AND 4K)
 - 📦 **Single binary** — ffmpeg and ffprobe bundled. No dependencies to install.
+- 🖥️ **Graphical interface** — available for Windows, macOS and Linux, in addition to the command line.
 
 ---
 
