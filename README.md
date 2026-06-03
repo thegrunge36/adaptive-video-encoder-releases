@@ -1,338 +1,184 @@
 # 🎬 Adaptive Video Encoder
 
-> **L'encodeur H.265 qui préserve votre Dolby Vision**
+### L'encodeur H.265 qui ne casse pas votre *Dolby Vision*.
 
-[![License: Commercial](https://img.shields.io/badge/License-Commercial-blue.svg)](LICENSE)
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-brightgreen.svg)](https://www.python.org/)
-[![Platform Support](https://img.shields.io/badge/Platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](#plateforme-support)
+[![Windows](https://img.shields.io/badge/Windows-10%2F11%20x64-0078D6?logo=windows&logoColor=white)](https://github.com/thegrunge36/adaptive-video-encoder-releases/releases)
+[![Linux](https://img.shields.io/badge/Linux-x64-FCC624?logo=linux&logoColor=black)](https://github.com/thegrunge36/adaptive-video-encoder-releases/releases)
+[![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon-000?logo=apple&logoColor=white)](https://github.com/thegrunge36/adaptive-video-encoder-releases/releases)
+[![Trial](https://img.shields.io/badge/Essai-7%20jours%20gratuit-22c55e)](https://adaptive-video-encoder.lemonsqueezy.com)
+[![License](https://img.shields.io/badge/Licence%20à%20vie-%2449.99-3b82f6)](https://adaptive-video-encoder.lemonsqueezy.com)
+[![Discord](https://img.shields.io/badge/Discord-rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
----
+Analyse adaptative **image par image**. Dolby Vision Profil **5, 7, 8.x** — HDR10 — HLG — grain cinématique. Tout préservé, sans compromis. Conçu pour les **remux Blu-ray 1080p** et les **rips UHD 4K**. Binaires natifs pour Windows, Linux et macOS (Apple Silicon).
 
-## 📋 Vue d'ensemble
+> **🌐 Site officiel : [adaptive-encoder.com](https://adaptive-encoder.com/)**
 
-**Adaptive Video Encoder** est un outil d'encodage vidéo professionnel conçu pour les créateurs de contenu, les passionnés d'audiovisuel et les studios de production. Il offre une compression H.265 intelligente tout en préservant **intégralement les métadonnées Dolby Vision**, HDR10+, HLG et les informations de film grain.
+<div align="center">
 
-### ✨ Points forts
+**[⬇ Essai gratuit 7 jours](https://adaptive-video-encoder.lemonsqueezy.com)** ·
+**[Acheter — $49.99](https://adaptive-video-encoder.lemonsqueezy.com)** ·
+**[💬 Discord](https://discord.gg/UHrEn2H6jD)**
 
-- **Dolby Vision Smart** : Analyse image par image | Profils 5, 7, 8.x supportés
-- **Interface graphique native** : macOS (Tkinter/CustomTkinter), Windows et Linux
-- **Préservation de la qualité HDR** : HDR10 | HLG | BT.2020 | Format grain
-- **Débruitage intelligent** : Filtre hqdn3d avec fenêtres glissantes temporelles
-- **Remuxage MKV** : Support mkvmerge + construction JSON rapide
-- **Système de licence** : Essai gratuit 7 jours | Licence à vie $49.99
-- **Cross-platform** : Code compilable avec PyInstaller/Nuitka
-- **CLI puissante** : Intégration facile dans les scripts de production
+</div>
 
 ---
 
-## 🚀 Installation rapide
+## Le problème
 
-### Prérequis
+Réencoder une vidéothèque en H.265 sans détruire les métadonnées, le grain et la dynamique : c'est exactement là où les outils grand public échouent.
 
-- **Python 3.8+**
-- **FFmpeg** (avec libplacebo pour HDR10 → SDR)
-- **ffprobe** (inclus dans ffmpeg)
-- **OpenCV** (`pip install opencv-python`)
-- **Dovi Tool** (optionnel, pour extraction Dolby Vision)
-- **mkvmerge** (optionnel, pour remuxage optimisé)
-- **HDR10+ Tool** (optionnel, pour métadonnées HDR10+)
-
-### Installation de dépendances Python
-
-```bash
-pip install opencv-python rich numpy
-```
-
-### Configuration FFmpeg
-
-**macOS (Homebrew)**
-```bash
-brew install ffmpeg
-brew install mkvtoolnix  # optionnel
-```
-
-**Ubuntu/Debian**
-```bash
-sudo apt-get install ffmpeg libplacebo-dev
-sudo apt-get install mkvtoolnix  # optionnel
-```
-
-**Windows**
-- Télécharger depuis [ffmpeg.org](https://ffmpeg.org/download.html)
-- Ajouter au PATH système
+- **Les encodeurs génériques cassent le Dolby Vision** — La plupart suppriment ou convertissent mal le Profil 7 (FEL/MEL). Ce qui était superbe sur votre OLED devient du SDR plat — ou du HDR cassé.
+- **ffmpeg manuel : des heures de tests** — Trouver les bons paramètres x265 prend 1 à 3 heures par film, et ils changent à chaque source.
+- **Presets fixes vs contenu variable** — Un preset universel donne des résultats médiocres partout. Un film granuleux et une animation lisse n'ont pas les mêmes besoins.
 
 ---
 
-## 💻 Utilisation
+## Pour qui c'est fait (et pour qui ça ne l'est pas)
 
-### Mode interface graphique (macOS recommandé)
+Soyons honnêtes d'entrée : Adaptive Encoder privilégie une **qualité proche du remux** plutôt qu'une compression maximale — c'est un choix de conception assumé.
 
-```bash
-python3 adaptive_encoder_gui_macos.py
-```
+**✓ Excellent pour :**
+- Les **remux Blu-ray 1080p** avec grain — classiques, films d'horreur, films d'auteur 35 mm
+- Les **rips UHD 4K** avec Dolby Vision, HDR10, HLG
+- Les **bibliothèques mixtes** que vous ne voulez pas calibrer film par film
+- **L'archivage long terme** — encodez une fois, regardez 100 fois
 
-**Fonctionnalités GUI**
-- Sélection fichiers source/sortie
-- Onglets configurable (Vidéo | Débit | HDR | Débruitage | Audio | Système)
-- Barre de progression en temps réel
-- Journal d'encodage détaillé
-- Pause/Reprendre/Arrêter
-- Gestion de la langue (FR/EN)
-
-### Mode ligne de commande
-
-#### Encodage basique H.265
-
-```bash
-python3 adaptive_encoder.py input.mkv -o output.mkv
-```
-
-#### Avec préservation Dolby Vision
-
-```bash
-python3 adaptive_encoder.py input.mkv \
-  --profile hevc-10 \
-  --preserve-dv \
-  --hdr \
-  -o output.mkv
-```
-
-#### HDR10 → SDR (avec tone mapping)
-
-```bash
-python3 adaptive_encoder.py input.mkv \
-  --downscale-1080p-sdr \
-  --tone-mapper libplacebo \
-  -o output_sdr.mkv
-```
-
-#### Avec débruitage actif
-
-```bash
-python3 adaptive_encoder.py input.mkv \
-  --denoise hqdn3d \
-  --denoise-strength 3 \
-  -o output_clean.mkv
-```
-
-#### Encodage audio personnalisé
-
-```bash
-python3 adaptive_encoder.py input.mkv \
-  --audio-lang fra \
-  --audio-preset high \
-  --audio-channels 6 \
-  -o output.mkv
-```
-
-### Options principales
-
-| Option | Description |
-|--------|-------------|
-| `-i, --input` | Fichier source (obligatoire) |
-| `-o, --output` | Fichier de sortie (défaut: `<source>_adaptive.mkv`) |
-| `--profile` | Profil vidéo: `hevc-10`, `hevc-12`, etc. |
-| `--preserve-dv` | Conserver Dolby Vision |
-| `--hdr` | Activer traitement HDR avancé |
-| `--downscale-1080p-sdr` | Convertir HDR → SDR 1080p |
-| `--denoise` | Moteur: `hqdn3d` ou `nlmeans` |
-| `--denoise-strength` | Intensité (1-5, défaut: 2) |
-| `--tone-mapper` | `libplacebo` ou `tonemap` |
-| `--audio-lang` | Langue audio (fra, eng, etc.) |
-| `--audio-preset` | `low`, `medium`, `high` |
-| `--auto-rename` | Renommer sortie si fichier existe |
-| `--license-check` | Vérifier licence avant encodage |
-
-Pour la liste complète :
-```bash
-python3 adaptive_encoder.py --help
-```
+**⚖ Qualité avant taille brute.** Sur du contenu déjà propre et sans grain, les gains d'espace sont plus modestes — un compromis délibéré pour ne jamais sacrifier la fidélité d'image. Pour l'archivage, 8 Go proches du remux valent mieux que 5 Go « acceptables » : le stockage devient moins cher chaque année, la qualité d'image, elle, est définitive.
 
 ---
 
-## 📊 Cas d'usage
+## ✨ Fonctionnalités
 
-### Production cinématographique
-Préserver Dolby Vision lors de la création de masters alternatifs H.265
+| # | Fonctionnalité | Description |
+|---|----------------|-------------|
+| 01 | **Analyse adaptative** | Détecte le bruit, le grain, la complexité et la densité des contours pour régler automatiquement les paramètres x265 par source |
+| 02 | **Dolby Vision 5, 7, 8.x** | Métadonnées extraites avec `dovi_tool`, préservées et réinjectées sans perte |
+| 03 | **HDR10 et HLG** | Primaires de couleur, transferts, master display, MaxCLL et MaxFALL intégralement conservés |
+| 04 | **Recadrage intelligent** | Détection automatique des barres noires sans risquer de couper le contenu réel |
+| 05 | **Audio et sous-titres** | Toutes les pistes copiées par défaut. TrueHD Atmos, DTS-HD MA, sous-titres PGS — zéro perte |
+| 06 | **Tous formats, 480p à 8K** | MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS. Binaire unique, aucune dépendance Python |
 
-### Archivage numérique
-Compresser le stockage sans perte de qualité HDR
+### En détail
 
-### Création contenu streaming
-Générer variantes SDR/HDR depuis source unique
+**🎞️ HDR & Dolby Vision**
+- Préservation complète du Dolby Vision Profil 5, 7, 8.x
+- Conversion automatique Profil 7 → 8.1
+- HDR10 et HLG intégralement préservés
+- Primaires, transferts, master display, MaxCLL & MaxFALL transmis
 
-### Nettoyage grain de film
-Débruitage adaptatif avec analyse grain intelligent
+**🔬 Analyse & qualité**
+- Analyse image par image — paramètres x265 optimaux par vidéo
+- Préservation du grain de film (35 mm, films d'horreur, classiques)
+- Détection automatique des barres noires — sans couper le contenu
+- Encodage 10-bit, preset adaptatif de *fast* à *veryslow*
 
----
-
-## 🔧 Architecture
-
-```
-adaptive_encoder.py          → Moteur d'encodage principal (CLI)
-adaptive_encoder_gui_macos.py → Interface graphique (macOS/Tk)
-licence.py                   → Système de gestion des licences
-```
-
-### Flux d'encodage Dolby Vision
-
-```
-1. Analyse source (ffprobe)
-   ↓
-2. Extraction métadonnées DV (dovi_tool)
-   ↓
-3. Encodage H.265 (ffmpeg + libx265)
-   ↓
-4. Remuxage + injection métadonnées (mkvmerge/json)
-   ↓
-5. Fichier final préservé DV
-```
-
-### Moteurs de traitement
-
-- **Vidéo** : libx265 (HEVC 8/10/12-bit)
-- **HDR** : libplacebo (tone mapping), zscale (gamut mapping)
-- **Débruitage** : hqdn3d (spatial + temporal)
-- **Audio** : libfdk-aac, libopus, FLAC
-- **Conteneur** : Matroska (MKV)
+**🎬 Compatibilité**
+- Toutes les pistes audio et sous-titres copiées (TrueHD Atmos, DTS-HD MA, PGS)
+- Formats : MKV, MP4, MOV, AVI, MXF, WebM, M4V, TS
+- Résolutions de 480p à 8K
+- Application autonome — ffmpeg, ffprobe & dovi_tool intégrés. Aucune dépendance, aucune installation
 
 ---
 
-## ✅ Gestion des licences
+## 📊 Comparaison
 
-Le logiciel inclut un système de licence optionnel (`licence.py`) pour :
-
-- Essai gratuit 7 jours
-- Licence à vie $49.99
-- Validation en ligne avec fallback hors-ligne
-
-Pour développement/test sans licence :
-```bash
-# Le code s'exécute même sans licence.py
-python3 adaptive_encoder.py input.mkv -o output.mkv
-```
+| | Encodeurs génériques | ffmpeg manuel | **Adaptive Video Encoder** |
+|---|:---:|:---:|:---:|
+| **Dolby Vision Profil 7** | ✗ Cassé | ~ Avec scripts | **✓ Automatique** |
+| **Préservation du grain** | ✗ Lissé | ~ Si vous savez quoi activer | **✓ Automatique** |
+| **Réglages adaptés par vidéo** | ✗ Presets fixes | ~ Si vous testez vous-même | **✓ Image par image** |
+| **HDR10 / HLG préservés** | ~ Parfois | ~ Si bien marqués | **✓ Toujours** |
+| **Détection des barres noires** | ✓ | ~ Manuel | **✓ Automatique** |
+| **Temps de configuration** | 5 min | 1–3 h par film | **0 min** |
 
 ---
 
-## 🐛 Dépannage
+## Pourquoi pas NVENC ?
 
-### FFmpeg non trouvé
+NVENC, QuickSync et AMF sont conçus pour la **vitesse**, pas la qualité. Parfaits pour streamer sur Twitch — médiocres pour archiver une bibliothèque que vous regarderez sur OLED pendant 10 ans.
 
-```bash
-# Vérifier l'installation
-ffmpeg -version
-ffprobe -version
+- **À débit égal**, x265 (preset *slower* ou *veryslow*) produit des fichiers visuellement meilleurs que NVENC HEVC — surtout sur le grain, les scènes sombres et les mouvements complexes.
+- **À qualité égale**, x265 produit des fichiers nettement **plus petits**. Chaque gigaoctet économisé l'est pour toujours.
+- NVENC est **figé dans le silicium** ; x265 reçoit des optimisations psychovisuelles depuis plus de 10 ans.
 
-# Sur macOS
-which ffmpeg
-```
-
-### Libplacebo indisponible (HDR→SDR échoue)
-
-```bash
-# Réinstaller ffmpeg avec support Vulkan
-brew reinstall ffmpeg --with-options --enable-libplacebo
-```
-
-### Dolby Vision non préservé
-
-Vérifier que `dovi_tool` est dans le PATH :
-```bash
-which dovi_tool
-```
-
-### Encodage très lent
-
-- Réduire `--preset` (rapide → moyen → lent)
-- Désactiver débruitage (`--denoise none`)
-- Activer GPU si disponible
+Pour archiver, la vitesse n'a pas d'importance : on encode une fois, on regarde 100 fois.
 
 ---
 
-## 📦 Distribution
+## 💻 Plateformes supportées
 
-### Créer un exécutable autonome (PyInstaller)
+Toutes les versions sont des **applications graphiques autonomes** — ffmpeg, ffprobe et dovi_tool sont intégrés dans l'exécutable. **Aucune dépendance, aucune installation.**
 
-```bash
-pip install pyinstaller
-pyinstaller --onefile --add-data "ressources:." adaptive_encoder.py
-```
+| Plateforme | Détails |
+|------------|---------|
+| 🪟 **Windows 10 / 11 (x64)** | Exécutable `.exe` natif. Double-cliquez pour lancer. Fonctionne aussi sous Windows Server |
+| 🐧 **Linux (x64)** | Binaire natif. Testé sur Ubuntu 22.04+, Debian 12+, Fedora 40+. Lancement depuis le gestionnaire de fichiers ou le menu |
+| 🍎 **macOS (Apple Silicon)** | Application native arm64 (M1/M2/M3). Lancement depuis le Finder ou le Launchpad |
 
-### Build macOS application
-
-```bash
-# Créer .app bundle autonome
-pyinstaller --windowed --onefile adaptive_encoder_gui_macos.py
-```
+> Les Mac Intel et les variantes Linux ARM ne sont pas pris en charge pour le moment.
 
 ---
 
-## 📝 Licences des dépendances
+## ⬇ Téléchargement & installation
 
-| Dépendance | Licence |
-|-----------|---------|
-| FFmpeg | LGPL-2.1+ |
-| libx265 | GPL-2.0 |
-| OpenCV | Apache 2.0 |
-| Rich | MIT |
-| Dovi Tool | LGPL-2.1+ |
-| mkvtoolnix | GPL-2.0 |
-
-**Note** : Adaptive Encoder lui-même est sous **licence commerciale** avec essai gratuit.
+1. Rendez-vous sur les **[releases GitHub](https://github.com/thegrunge36/adaptive-video-encoder-releases/releases)** — aucun paiement ni licence requis pour télécharger
+2. Choisissez votre binaire : **Windows (.exe)**, **Linux** ou **macOS**
+3. **Double-cliquez pour lancer** — tout est autonome, rien à installer
 
 ---
 
-## 🤝 Contribution
+## 🔑 Licence
 
-Les contributions sont bienvenues ! Avant de soumettre un PR :
+**Essai gratuit. Puis décidez.**
 
-1. Forker le projet
-2. Créer une branche feature (`git checkout -b feature/amazing-feature`)
-3. Committer les changements (`git commit -m 'Add amazing feature'`)
-4. Pousser vers la branche (`git push origin feature/amazing-feature`)
-5. Ouvrir une Pull Request
+- **Essai gratuit de 7 jours** — testez sur vos propres fichiers, *aucune carte de crédit requise*
+- **Licence à vie : $49.99** — pour un seul ordinateur
+- **Transfert gratuit** si vous changez de machine
 
----
+> Vous changez d'ordinateur ? Écrivez à **osx300@gmail.com** ou contactez-nous sur Discord — le transfert est gratuit et rapide.
 
-## 📧 Support & Contact
-
-- **Site officiel** : https://adaptiveencoder.com
-- **Email** : support@adaptiveencoder.com
-- **Issues** : [GitHub Issues](../../issues)
-- **Documentation** : [Voir index.html](./index.html)
+**[🕐 Commencer l'essai gratuit](https://adaptive-video-encoder.lemonsqueezy.com)**
 
 ---
 
-## 📄 Licence
+## ❓ FAQ
 
-```
-Copyright © 2024 Adaptive Encoder
-Tous droits réservés.
+**Est-ce uniquement pour la 4K ?**
+Non, l'outil est aussi excellent en 1080p — surtout sur les remux Blu-ray avec grain (classiques, horreur, films d'auteur 35 mm) ou les scènes complexes. La plupart des encodeurs lissent le grain par défaut ; Adaptive Encoder le détecte et le préserve automatiquement, quelle que soit la résolution.
 
-Essai gratuit 7 jours
-Licence à vie : $49.99
+**Pourquoi mes fichiers sont-ils plus gros qu'avec d'autres encodeurs ?**
+C'est un choix délibéré. L'outil est calibré pour préserver au maximum le détail, le grain et les métadonnées HDR — même quand l'algorithme pourrait compresser davantage. Pour archiver, 8 Go proches du remux valent mieux que 5 Go « acceptables ». Vous pouvez toujours fixer un débit maximum dans les options d'encodage.
 
-Voir LICENSE pour les termes complets.
-```
+**La conversion Profil 7 → 8.1 fonctionne-t-elle vraiment ?**
+Oui, c'est la conversion par défaut. Le Profil 7 (FEL/MEL) est extrait avec `dovi_tool` et réinjecté en 8.1 dans le fichier de sortie. Compatible avec la plupart des lecteurs Dolby Vision modernes (téléviseurs, box, lecteurs récents).
+
+**L'encodage est-il lent ?**
+Oui — volontairement. L'outil utilise par défaut les presets x265 *slower* ou *veryslow* pour maximiser la qualité. Ce n'est pas un encodeur *rapide*, c'est un *bon* encodeur. Si vous voulez de la vitesse, NVENC est gratuit — mais ce n'est pas le même produit.
+
+**Une licence par machine, c'est restrictif ?**
+Si vous changez d'ordinateur, écrivez à osx300@gmail.com ou contactez-nous sur Discord : le transfert est gratuit et rapide.
+
+**Et si ça ne marche pas sur mes fichiers ?**
+C'est exactement à ça que sert l'essai gratuit. Demandez votre clé d'essai sur Discord ou par e-mail avant d'acheter, testez sur vos propres fichiers, et décidez ensuite.
 
 ---
 
-## 🙏 Remerciements
+## 🔗 Liens
 
-- **FFmpeg** & **libx265** pour l'infrastructure d'encodage
-- **Dolby Laboratories** pour les spécifications Dolby Vision
-- **MkvToolNix** pour le remuxage Matroska
-- La communauté vidéo open-source
+- **🌐 Site web** — [adaptive-encoder.com](https://adaptive-encoder.com/)
+- **⬇ Téléchargements** — [Releases GitHub](https://github.com/thegrunge36/adaptive-video-encoder-releases/releases)
+- **💬 Discord** — [rejoindre la communauté](https://discord.gg/UHrEn2H6jD)
+- **🛒 Acheter / essai** — [LemonSqueezy](https://adaptive-video-encoder.lemonsqueezy.com)
+- **✉ Email** — osx300@gmail.com
 
 ---
 
 <div align="center">
 
-**[🌐 Site Web](https://adaptiveencoder.com)** • 
-**[📖 Documentation](./index.html)** • 
-**[🐛 Signaler un bug](../../issues)** • 
-**[💬 Discussions](../../discussions)**
+**Réencodez votre bibliothèque. Sans compromis.**
 
-Encodez votre contenu vidéo avec intelligence. 🎬✨
+7 jours d'essai gratuit · Licence à vie $49.99 · Windows · Linux · macOS
+
+© 2026 Adaptive Video Encoder
 
 </div>
