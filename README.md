@@ -9,6 +9,10 @@
 
 [![Site web](https://img.shields.io/badge/Site%20web-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Essai gratuit](https://img.shields.io/badge/Essai%20gratuit-7%20jours-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com) [![Licence à vie](https://img.shields.io/badge/Licence%20%C3%A0%20vie-%2449.99-004577)](https://adaptive-video-encoder.lemonsqueezy.com) [![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
+> ⚠️ **Logiciel propriétaire — licence requise.**
+>
+> Ce dépôt **ne contient pas de code source** : seules les versions compilées (binaires) sont distribuées. L'application **ne fonctionne pas sans clé de licence valide** (ou un essai gratuit de 7 jours actif) ; l'activation se fait au lancement. Procurez-vous une clé sur **[adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com)**.
+
 ---
 
 ## Réencodez votre vidéothèque sans compromis de qualité
@@ -264,6 +268,8 @@ Au premier lancement, démarrez votre **essai gratuit de 7 jours** ou entrez vot
 
 **Comment fonctionne l'essai gratuit ?** Téléchargez l'application et essayez toutes les fonctionnalités pendant 7 jours, sans engagement.
 
+**Le code source est-il disponible ?** Non. L'application est propriétaire ; seules les versions compilées sont distribuées sur GitHub (versions + issues). Elle nécessite une clé de licence valide (ou un essai actif) pour s'exécuter.
+
 **Y a-t-il une interface graphique ?** Oui ! Une interface graphique native est disponible sur Windows, Linux et macOS. La ligne de commande reste disponible pour l'automatisation et les scripts.
 
 **Quelles plateformes sont supportées ?** Windows 10/11 (x64), Linux (x64), et macOS Apple Silicon (M1/M2/M3). ffmpeg et ffprobe sont intégrés — seuls mkvmerge et dovi_tool doivent être installés séparément.
@@ -299,6 +305,10 @@ Au premier lancement, démarrez votre **essai gratuit de 7 jours** ou entrez vot
 > **The H.265 encoder that doesn't break your Dolby Vision.**
 
 [![Website](https://img.shields.io/badge/Website-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Free trial](https://img.shields.io/badge/Free%20trial-7%20days-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com) [![Lifetime license](https://img.shields.io/badge/Lifetime%20license-%2449.99-004577)](https://adaptive-video-encoder.lemonsqueezy.com) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
+
+> ⚠️ **Proprietary software — license required.**
+>
+> This repository **contains no source code**: only compiled (binary) releases are distributed. The application **will not run without a valid license key** (or an active 7-day free trial); activation happens on launch. Get a key at **[adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com)**.
 
 ---
 
@@ -554,6 +564,8 @@ On first launch, start your **7-day free trial** or enter the **license key** yo
 **How much does it cost?** The tool comes with a 7-day free trial. After that, a lifetime license costs $49.99 — one-time payment, no subscription. Purchase at [adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com).
 
 **How does the free trial work?** Download the app and try all features for 7 days, no commitment.
+
+**Is the source code available?** No. The application is proprietary; only compiled releases are distributed on GitHub (releases + issues). It requires a valid license key (or an active trial) to run.
 
 **Is there a graphical interface?** Yes! A native graphical interface is available on Windows, Linux and macOS. The command line remains available for automation and scripting.
 
