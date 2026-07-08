@@ -7,7 +7,7 @@
 
 > **L'encodeur H.265 qui ne casse pas votre Dolby Vision.**
 
-[![Site web](https://img.shields.io/badge/Site%20web-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Essai gratuit](https://img.shields.io/badge/Essai%20gratuit-7%20jours-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a) [![Licence à vie](https://img.shields.io/badge/Licence%20%C3%A0%20vie-%2449.99%20CAD-004577)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da) [![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
+[![Site web](https://img.shields.io/badge/Site%20web-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Essai gratuit](https://img.shields.io/badge/Essai%20gratuit-7%20jours-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a) [![Licence à vie](https://img.shields.io/badge/Licence%20%C3%A0%20vie-Paiement%20unique-004577)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da) [![Discord](https://img.shields.io/badge/Discord-Rejoindre-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
 > ⚠️ **Logiciel propriétaire, licence requise.**
 >
@@ -58,7 +58,7 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 
 Adaptive Video Encoder est disponible avec un **essai gratuit de 7 jours**, sans engagement. Ensuite, une **licence à vie débloque l'outil définitivement : pas d'abonnement, mises à jour incluses.
 
-👉 **[Démarrer l'essai gratuit](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Acheter ·](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
+👉 **[Démarrer l'essai gratuit](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Acheter](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
 
 💬 **Questions avant d'acheter ? Rejoignez le [Discord](https://discord.gg/UHrEn2H6jD)**, avec plaisir.
 
@@ -188,9 +188,7 @@ Tout se règle visuellement ; aucune ligne de commande. Parmi les options dispon
 
 ## ❓ FAQ
 
-**Combien ça coûte ?** L'outil est disponible avec un essai gratuit de 7 jours. Ensuite, une licence à vie coûte $49.99 CAD, soit environ 35 $ US ou 31 € selon le taux de change : paiement unique, pas d'abonnement. Achat sur [adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da).
-
-**Comment fonctionne l'essai gratuit ?** Téléchargez l'application et essayez toutes les fonctionnalités pendant 7 jours, sans engagement.
+**Comment fonctionne l'essai gratuit ?** Téléchargez l'application et essayez toutes les fonctionnalités pendant 7 jours, sans engagement. Ensuite, une licence à vie débloque l'outil définitivement : paiement unique, pas d'abonnement. Achat sur [adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da).
 
 **C'est quoi, la « Cible VMAF » ?** Un mode optionnel qui garantit la qualité au lieu de l'estimer : l'outil encode des extraits du film, mesure la qualité réelle de chaque essai avec VMAF (la métrique perceptuelle de Netflix) et retient le réglage le plus économe qui atteint le score demandé. Cochez la case, choisissez un score (95 par défaut), c'est tout.
 
@@ -230,7 +228,7 @@ Tout se règle visuellement ; aucune ligne de commande. Parmi les options dispon
 
 > **The H.265 encoder that doesn't break your Dolby Vision.**
 
-[![Website](https://img.shields.io/badge/Website-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Free trial](https://img.shields.io/badge/Free%20trial-7%20days-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a) [![Lifetime license](https://img.shields.io/badge/Lifetime%20license-%2449.99%20CAD-004577)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
+[![Website](https://img.shields.io/badge/Website-adaptive--encoder.com-2D8CFF?logo=googlechrome&logoColor=white)](https://adaptive-encoder.com) [![Free trial](https://img.shields.io/badge/Free%20trial-7%20days-22C55E)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a) [![Lifetime license](https://img.shields.io/badge/Lifetime%20license-One%20time%20payment-004577)](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da) [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UHrEn2H6jD)
 
 > ⚠️ **Proprietary software, license required.**
 >
@@ -281,7 +279,7 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 
 Adaptive Video Encoder comes with a **7-day free trial**, no commitment. After that, a lifetime license unlocks the tool forever: no subscription, updates included.
 
-👉 **[Start the free trial](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Buy ·](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
+👉 **[Start the free trial](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Buy](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
 
 💬 **Questions before buying? Join the [Discord](https://discord.gg/UHrEn2H6jD)**, happy to help.
 
@@ -411,9 +409,7 @@ Everything is set visually; no command line. Available options include:
 
 ## ❓ FAQ
 
-**How much does it cost?** The tool comes with a 7-day free trial. After that, a lifetime license costs $49.99 CAD, about $35 USD or €31 depending on the exchange rate: one-time payment, no subscription. Purchase at [adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da).
-
-**How does the free trial work?** Download the app and try all features for 7 days, no commitment.
+**How does the free trial work?** Download the app and try all features for 7 days, no commitment. After that, a lifetime license unlocks the tool forever: one-time payment, no subscription. Purchase at [adaptive-video-encoder.lemonsqueezy.com](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da).
 
 **What is "Target VMAF"?** An optional mode that guarantees quality instead of estimating it: the tool encodes clips from the film, measures the real quality of each attempt with VMAF (Netflix's perceptual metric) and keeps the most economical setting that reaches the requested score. Tick the box, pick a score (95 by default), done.
 
