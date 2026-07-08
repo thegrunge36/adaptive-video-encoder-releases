@@ -279,9 +279,9 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 
 ## 💰 7-day free trial · Lifetime license
 
-Adaptive Video Encoder comes with a **7-day free trial**, no commitment. After that, a **$49.99 CAD lifetime license** (about $35 USD or €31, depending on the exchange rate) unlocks the tool forever: no subscription, updates included.
+Adaptive Video Encoder comes with a **7-day free trial**, no commitment. After that, a lifetime license unlocks the tool forever: no subscription, updates included.
 
-👉 **[Start the free trial](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Buy · $49.99 CAD](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
+👉 **[Start the free trial](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Buy ·](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
 
 💬 **Questions before buying? Join the [Discord](https://discord.gg/UHrEn2H6jD)**, happy to help.
 
