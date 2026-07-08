@@ -56,9 +56,9 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 
 ## 💰 Essai gratuit 7 jours · Licence à vie
 
-Adaptive Video Encoder est disponible avec un **essai gratuit de 7 jours**, sans engagement. Ensuite, une **licence à vie à $49.99 CAD** (environ 35 $ US ou 31 €, selon le taux de change) débloque l'outil définitivement : pas d'abonnement, mises à jour incluses.
+Adaptive Video Encoder est disponible avec un **essai gratuit de 7 jours**, sans engagement. Ensuite, une **licence à vie débloque l'outil définitivement : pas d'abonnement, mises à jour incluses.
 
-👉 **[Démarrer l'essai gratuit](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Acheter · $49.99 CAD](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
+👉 **[Démarrer l'essai gratuit](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/7f26ba5d-c99c-4af7-8a08-63258326a38a)** · **[Acheter ·](https://adaptive-video-encoder.lemonsqueezy.com/checkout/buy/27660616-8926-4588-b00d-fe9a7c48e9da)**
 
 💬 **Questions avant d'acheter ? Rejoignez le [Discord](https://discord.gg/UHrEn2H6jD)**, avec plaisir.
 
