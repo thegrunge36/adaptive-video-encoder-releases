@@ -54,7 +54,7 @@ Vous avez une vidéothèque pleine de remux Blu-ray 1080p, de rips Dolby Vision 
 
 ---
 
-## 💰 Essai gratuit 7 jours · Licence à vie $49.99 CAD
+## 💰 Essai gratuit 7 jours · Licence à vie
 
 Adaptive Video Encoder est disponible avec un **essai gratuit de 7 jours**, sans engagement. Ensuite, une **licence à vie à $49.99 CAD** (environ 35 $ US ou 31 €, selon le taux de change) débloque l'outil définitivement : pas d'abonnement, mises à jour incluses.
 
@@ -277,7 +277,7 @@ You have a video library full of 1080p Blu-rays, 4K Dolby Vision rips, HDR10 or 
 
 ---
 
-## 💰 7-day free trial · Lifetime license $49.99 CAD
+## 💰 7-day free trial · Lifetime license
 
 Adaptive Video Encoder comes with a **7-day free trial**, no commitment. After that, a **$49.99 CAD lifetime license** (about $35 USD or €31, depending on the exchange rate) unlocks the tool forever: no subscription, updates included.
 
